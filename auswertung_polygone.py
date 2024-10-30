@@ -2,28 +2,25 @@ import pandas as pd
 import numpy as np
 import cv2
 import os
-from google.colab.patches import cv2_imshow
+import matplotlib.pyplot as plt
 
 # Directories for input and output
-annotations_dir = '/annotiert_polygon_table'  # Folder containing CSV files
-images_dir = '/org_image'  # Folder containing image files in .png format
-output_dir_1 = '/annotiert_blank_pixel_image'  # Folder to save results
-output_dir_2 = '/annotiert_aus_polygon_image'
-output_dir_3 = '/annotiert_pixel_table'
-
-# Ensure the output directory exists
-os.makedirs(output_dir, exist_ok=True)
+annotations_dir = './annotiert_polygon_table'  # Folder containing CSV files
+images_dir = './org_image'  # Folder containing image files in .png format
+output_dir_1 = './annotiert_blank_pixel_image'  # Folder to save results
+output_dir_2 = './annotiert_aus_polygon_image'
+output_dir_3 = './annotiert_pixel_table'
 
 # Process each CSV file in the annotations directory
 for csv_file in os.listdir(annotations_dir):
     if csv_file.endswith('.csv'):
         # Get the base name without extension
         base_name = os.path.splitext(csv_file)[0]
-        print(base_name)
 
         # Remove the part after the SECOND last underscore
         image_base_name = '_'.join(base_name.split('_')[:-1])  # Removes everything after the last "_"
         image_base_name = '_'.join(image_base_name.split('_')[:-1])  # Removes everything after the last "_"
+        print(image_base_name)
 
         # Remove 'annotated_' prefix if it exists
         if image_base_name.startswith('annotated_'):
@@ -92,8 +89,10 @@ for csv_file in os.listdir(annotations_dir):
         cv2.imwrite(output_image_path, image)
         print(f"Image with polygons saved to {output_image_path}")
 
-        # Display the image with polygons
-        cv2_imshow(image)
+        # Display the image with polygons using matplotlib
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # Convert BGR to RGB for correct colors in matplotlib
+        plt.axis('off')  # Hide axis for better view
+        #plt.show()
 
         # Part 2: Create and save the blank image with colored pixels
         blank_image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -112,5 +111,8 @@ for csv_file in os.listdir(annotations_dir):
         cv2.imwrite(output_blank_image_path, blank_image)
         print(f"Blank image with colored pixels saved to {output_blank_image_path}")
 
-        # Display the blank image with colored pixels
-        cv2_imshow(blank_image)
+        # Display the blank image with colored pixels using matplotlib
+        plt.imshow(cv2.cvtColor(blank_image, cv2.COLOR_BGR2RGB))
+        plt.axis('off')
+        #plt.show()
+

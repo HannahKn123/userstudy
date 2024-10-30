@@ -1,3 +1,4 @@
+install.packages("rsconnect")
 library(shiny)
 library(magick)
 library(shinyjs)
@@ -55,6 +56,7 @@ ui <- fluidPage(
       uiOutput("page_content")
   )
 )
+
 
 server <- function(input, output, session) {
   
