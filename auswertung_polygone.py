@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
+#ß
 
 # Directories for input and output
 annotations_dir = './annotiert_polygon_table'  # Folder containing CSV files
