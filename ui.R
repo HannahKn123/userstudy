@@ -13,22 +13,23 @@ ui <- fluidPage(
         color: #4a4a4a;
       }
       .highlight-container, .decision-container {
-        padding: 20px; /* Reduced padding */
+        padding: 15px;
         background-color: #ffffff;
         border: 2px solid #d3d3d3;
         border-radius: 10px;
-        margin-bottom: 15px; /* Reduced margin */
+        margin-bottom: 15px;
         position: relative;
-        width: 80%; /* Adjusts width for a more compact look */
+        width: 100%;
+        max-width: 800px;
         margin-left: auto;
         margin-right: auto;
       }
       .highlight-container h4, .decision-container h4 {
         margin-top: 0;
         font-weight: bold;
-        font-size: 14px; /* Smaller font size */
-        color: #ffffff; /* White text for better contrast */
-        padding: 8px 12px; /* Reduced padding */
+        font-size: 14px;
+        color: #ffffff;
+        padding: 8px 12px;
         border-radius: 5px;
         position: absolute;
         top: -12px;
@@ -41,29 +42,18 @@ ui <- fluidPage(
         background-color: #d3d3d3;
       }
       .classification-section {
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #d3d3d3; /* Divider line for separation */
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #d3d3d3;
       }
-      .highlight-instructions {
-        margin-top: 25px; /* Additional spacing before highlight instructions */
-        font-weight: bold;
-      }
-      .image-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px; /* Adjusted padding */
-        background-color: #f0f9ff;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.05);
-      }
-      .highlight-text {
-        margin-top: 30px;
-      }
-      /* Style for the dropdown menu */
       .custom-dropdown select {
-        color: #4169E1; /* Set dropdown text color to blue */
+        color: #4169E1;
+      }
+      /* Style to display two lines side by side */
+      .flex-container {
+        display: flex;
+        gap: 10px; /* Add space between the two lines */
+        align-items: center; /* Vertically aligns text in the middle */
       }
     "))
   ),

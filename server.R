@@ -48,46 +48,52 @@ server <- function(input, output, session) {
       image <- image_read(selected_images[i])
       
       tagList(
-        # AI Decision Box
+        # AI Decision Box - Einheitliche Struktur und größerer Abstand zwischen den Seiten
         div(class = "highlight-container",
+            style = "width: 100%; max-width: 1200px; margin: 0 auto; margin-bottom: 30px; display: flex; justify-content: center;",  # Box mittig im Fenster zentriert
             h4("AI Decision"),
-            p("The AI recognized this image as taken in ", 
-              span(style = "color: #4169E1;", class_number), "."),
-            p("The ", strong("highlighted areas"), " shown below were ", strong("key factors"), " in its decision.")
+            div(class = "flex-container", 
+                style = "gap: 40px; width: 100%; align-items: center;",  # Größerer Abstand zwischen den Seiten
+                div(style = "flex: 1;",  # Text links
+                    p("The AI recognized this image as taken in ", 
+                      span(style = "color: #4169E1;", class_number), ".")
+                ),
+                div(style = "flex: 1;",  # Text rechts
+                    p("The ", strong("highlighted areas"), " shown below were ", strong("key factors"), " in its decision.")
+                )
+            )
         ),
         
-        # Human Decision Box
+        # Human Decision Box - Einheitliche Struktur und größerer Abstand zwischen den Seiten
         div(class = "decision-container",
+            style = "width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: center;",  # Box mittig im Fenster zentriert
             h4("Human Decision"),
-            div(class = "classification-section",
-                p("Please ", strong("select the city"), " you believe this image represents from the dropdown menu:"), 
-                
-                # Dropdown in Human Decision box
-                div(class = "select-input", style = "display: flex; align-items: center; font-size: 14px;",
-                    tags$span("I think the picture was taken in: "),
-                    div(class = "custom-dropdown", style = "margin-left: 5px; display: flex; align-items: center;",  
-                        selectInput(paste0("class_", i), NULL, choices = c("", "Tel Aviv", "Jerusalem", "Hamburg", "Berlin"), 
-                                    width = "150px",  
-                                    selectize = FALSE)
-                    )
+            div(class = "flex-container", 
+                style = "gap: 40px; width: 100%; align-items: center;",  # Größerer Abstand zwischen den Seiten
+                div(
+                  style = "flex: 1;",  # Textbereich links
+                  p("Please ", strong("select the city"), " you believe this image represents from the dropdown menu:"),
+                  div(class = "custom-dropdown",  
+                      selectInput(paste0("class_", i), NULL, choices = c("", "Tel Aviv", "Jerusalem", "Hamburg", "Berlin"), 
+                                  width = "150px",  
+                                  selectize = FALSE)
+                  )
+                ),
+                div(
+                  style = "flex: 1; display: flex; flex-direction: column; align-items: center;",  # Text und Bildbereich rechts
+                  p("Please ", strong("highlight the key areas"), " which were key factors in your decision."),  # Text über dem Bild
+                  plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), height = "auto", width = "auto"),  # Ursprüngliche Größe des Bildes
+                  div(style = "display: flex; gap: 10px; justify-content: center; margin-top: 10px;",  # Buttons unter dem Bild
+                      actionButton(paste0("clear_", i), "Clear All Annotations", icon = icon("trash"), class = "btn-secondary"),
+                      actionButton(paste0("delete_last_polygon", i), "Delete Last Polygon", icon = icon("trash"), class = "btn-secondary"),
+                      actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary"),
+                      actionButton("next_page", "Next Image", icon = icon("arrow-right"), class = "btn-primary")
+                  )
                 )
-            ),
-            
-            # Additional space and instructions for highlighting
-            p("Please ", strong("highlight the key areas"), " which were key factors in your decision."),
-            
-            # Plot output for annotations
-            plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), height = "500px"),
-            
-            div(style = "display: flex; gap: 10px; justify-content: center;",
-                actionButton(paste0("clear_", i), "Clear All Annotations", icon = icon("trash"), class = "btn-secondary"),
-                actionButton(paste0("delete_last_polygon", i), "Delete Last Polygon", icon = icon("trash"), class = "btn-secondary"),
-                actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary"),
-                actionButton("next_page", "Next Image", icon = icon("arrow-right"), class = "btn-primary")
             )
         )
       )
-    } else {
+    }else {
       tagList(
         h3("Thank you for completing the annotations!"),
         p("All annotated images and coordinates have been saved to Nextcloud."),
