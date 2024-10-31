@@ -83,11 +83,11 @@ server <- function(input, output, session) {
                   style = "flex: 1; display: flex; flex-direction: column; align-items: center;",  # Text und Bildbereich rechts
                   p("Please ", strong("highlight the key areas"), " which were key factors in your decision."),  # Text über dem Bild
                   plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), height = "auto", width = "auto"),  # Ursprüngliche Größe des Bildes
-                  div(style = "display: flex; gap: 10px; justify-content: center; margin-top: 10px;",  # Buttons unter dem Bild
-                      actionButton(paste0("clear_", i), "Clear All Annotations", icon = icon("trash"), class = "btn-secondary"),
-                      actionButton(paste0("delete_last_polygon", i), "Delete Last Polygon", icon = icon("trash"), class = "btn-secondary"),
-                      actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary"),
-                      actionButton("next_page", "Next Image", icon = icon("arrow-right"), class = "btn-primary")
+                  div(style = "display: flex; gap: 5px; justify-content: center; margin-top: 10px;",  # Kleinere Buttons und zentriert
+                      actionButton(paste0("clear_", i), "Clear All", icon = icon("trash"), class = "btn-secondary", style = "padding: 4px 8px; font-size: 12px;"),
+                      actionButton(paste0("delete_last_polygon", i), "Delete Last", icon = icon("trash"), class = "btn-secondary", style = "padding: 4px 8px; font-size: 12px;"),
+                      actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary", style = "padding: 4px 8px; font-size: 12px;"),
+                      actionButton("next_page", "Next", icon = icon("arrow-right"), class = "btn-primary", style = "padding: 4px 8px; font-size: 12px;")
                   )
                 )
             )
