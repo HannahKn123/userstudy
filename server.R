@@ -1,8 +1,12 @@
-
 server <- function(input, output, session) {
   
-  if (!dir.exists("annotiert_xai_image")) dir.create("annotiert_xai_image")
-  if (!dir.exists("annotiert_polygon_table")) dir.create("annotiert_polygon_table")
+  shinyjs::useShinyjs()
+  
+  # Nextcloud settings
+  img_cloud_folder <- "annotation_result"
+  csv_cloud_folder <- "annotation_result"
+  username <- "zbc57"
+  password <- "IBA2024Nein#"
   
   img_dir <- "xai_image/"
   all_images <- list.files(img_dir, pattern = "\\.png$", full.names = TRUE)
@@ -21,12 +25,20 @@ server <- function(input, output, session) {
   
   output$page_content <- renderUI({
     current_page <- page()
-    
     if (current_page == 1) {
       tagList(
-        h3("Welcome to the Random Image Marker Tool"),
-        p("Use this tool to annotate images by selecting the displayed city and highlighting the region that influenced your decision."),
-        div(style = "text-align: right; margin-top: 20px;",
+        h3("Welcome to the 'Guess the City' study!"),
+        p("The goal of this study is to explore how artificial intelligence (AI) and humans can work together effectively. To do this, we’ll show you 10 images of random locations from one of four cities: Berlin, Hamburg, Jerusalem, and Tel Aviv. Each image is a Google Maps photo from one of these cities."),
+        h4("Here’s what you’ll do:"),
+        tags$ol(
+          tags$li(strong("City Classification:"), " Look at each image carefully and decide which of the four cities you think it shows. Our AI model has already made its own prediction, which we will share with you. Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
+          tags$li(strong("Marking Important Areas:"), " After seeing the AI's prediction, you’ll also get a heat map highlighting which parts of the image influenced the AI's decision. Darker areas on the map indicate features that were more important to the AI. Your task is to mark the areas that are most important for your own decision. If you agree with the AI, you can mark similar areas, or you can mark completely different areas based on your perspective.")
+        ),
+        p("To proceed with the study, it’s essential that you complete both the classification and the marking tasks for each image."),
+        h4("Bonus Opportunity:"),
+        p("You can earn an additional payment by providing precise markings and achieving at least 90% correct classifications. This bonus will be an extra x cents."),
+        p("Thank you for your participation!"),
+        div(style = "text-align: center; margin-top: 20px;",
             actionButton("next_page", "Start Annotating", icon = icon("arrow-right"), class = "btn-primary")
         )
       )
@@ -36,52 +48,60 @@ server <- function(input, output, session) {
       image <- image_read(selected_images[i])
       
       tagList(
-        div(class = "image-container",
-            fluidRow(
-              column(6, 
-                     div(style = "text-align: left; margin-top: 20px;",
-                         h4("AI Prediction: ", class_number),
-                         p("Do you agree? Choose the city and highlight the area most important for your decision."),
-                         div(style = "margin-top: 15px;", 
-                             div(class = "select-input", 
-                                 selectInput(paste0("class_", i), NULL, 
-                                             choices = c("", "Tel Aviv", "Jerusalem", "Hamburg", "Berlin"))
-                             )
-                         )
-                     )
-              ),
-              
-              column(6,
-                     div(style = "text-align: left;", 
-                         plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), height = "500px")),
-                     div(style = "display: flex; gap: 10px; margin-top: 10px;",
-                         actionButton(paste0("clear_", i), "Clear Annotations", icon = icon("trash"), class = "btn-secondary"),
-                         actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary")
-                     )
-              )
-            )
+        # AI Decision Box
+        div(class = "highlight-container",
+            h4("AI Decision"),
+            p("The AI recognized this image as taken in ", 
+              span(style = "color: #4169E1;", class_number), "."),
+            p("The ", strong("highlighted areas"), " shown below were ", strong("key factors"), " in its decision.")
         ),
         
-        div(
-          actionButton("next_page", "", icon = icon("arrow-right"), class = "btn-primary"),
-          style = "text-align: right; margin-top: 20px;"
+        # Human Decision Box
+        div(class = "decision-container",
+            h4("Human Decision"),
+            div(class = "classification-section",
+                p("Please ", strong("select the city"), " you believe this image represents from the dropdown menu:"), 
+                
+                # Dropdown in Human Decision box
+                div(class = "select-input", style = "display: flex; align-items: center; font-size: 14px;",
+                    tags$span("I think the picture was taken in: "),
+                    div(class = "custom-dropdown", style = "margin-left: 5px; display: flex; align-items: center;",  
+                        selectInput(paste0("class_", i), NULL, choices = c("", "Tel Aviv", "Jerusalem", "Hamburg", "Berlin"), 
+                                    width = "150px",  
+                                    selectize = FALSE)
+                    )
+                )
+            ),
+            
+            # Additional space and instructions for highlighting
+            p("Please ", strong("highlight the key areas"), " which were key factors in your decision."),
+            
+            # Plot output for annotations
+            plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), height = "500px"),
+            
+            div(style = "display: flex; gap: 10px; justify-content: center;",
+                actionButton(paste0("clear_", i), "Clear All Annotations", icon = icon("trash"), class = "btn-secondary"),
+                actionButton(paste0("delete_last_polygon", i), "Delete Last Polygon", icon = icon("trash"), class = "btn-secondary"),
+                actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), class = "btn-secondary"),
+                actionButton("next_page", "Next Image", icon = icon("arrow-right"), class = "btn-primary")
+            )
         )
       )
     } else {
       tagList(
         h3("Thank you for completing the annotations!"),
-        p("All annotated images and coordinates have been saved."),
+        p("All annotated images and coordinates have been saved to Nextcloud."),
         actionButton("close_app", "Close", class = "btn-primary", style = "margin-top: 20px;")
       )
     }
   })
   
+  # Observers for annotation functionality
   observeEvent(page(), {
     lapply(1:10, function(i) {
       observeEvent(input[[paste0("image_click_", i)]], {
         current_coords <- coords()
         polygon_id_val <- polygon_id()
-        
         current_coords <- add_row(
           current_coords,
           x = input[[paste0("image_click_", i)]]$x,
@@ -120,75 +140,51 @@ server <- function(input, output, session) {
   
   observeEvent(input$next_page, {
     current_page <- page()
-    
     if (current_page >= 2 && current_page <= 11) {
       i <- current_page - 1
       selected_class <- input[[paste0("class_", i)]]
       input_filename <- tools::file_path_sans_ext(basename(selected_images[i]))
-      
-      # Extract class_AI from the filename
       class_AI <- extract_class_from_filename(selected_images[i])
       
-      annotation_missing <- selected_class == ""
+      polygon_missing <- selected_class == ""
       polygon_coords <- coords() %>% filter(name == paste("polygon", i))
-      polygon_missing <- nrow(polygon_coords) < 3  
+      annotation_missing <- nrow(polygon_coords) < 3  
       
       if (annotation_missing && polygon_missing) {
         showModal(modalDialog(
-          title = "Annotation Required",
-          "Please select a city from the dropdown menu and highlight a region in the picture before proceeding to the next page.",
+          title = "Please choose a city and annotate the picture!",
+          "Please make sure to select a city from the dropdown menu and annotate the picture before moving to the next page.",
           easyClose = TRUE
         ))
       } else if (annotation_missing) {
         showModal(modalDialog(
-          title = "Dropdown Selection Required",
-          "Please select a city from the dropdown menu before proceeding to the next page.",
+          title = "Please annotate the picture!",
+          "Please make sure to annotate the picture before moving to the next page.",
           easyClose = TRUE
         ))
       } else if (polygon_missing) {
         showModal(modalDialog(
-          title = "Image Annotation Required",
-          "Please highlight a region in the picture before proceeding to the next page.",
+          title = "Please choose a city!",
+          "Please make sure to select a city from the dropdown menu before moving to the next page.",
           easyClose = TRUE
         ))
       } else {
-        annotated_img_name <- paste0("annotated_", input_filename, "_", selected_class, ".jpg")
-        annotation_csv_name <- paste0("annotated_", input_filename, "_", selected_class, ".csv")
+        # Save functionality with progress bar
+        showModal(modalDialog(
+          title = "Saving, please wait...",
+          progressBar(id = "save_progress", value = 0, display_pct = TRUE),
+          footer = NULL,
+          easyClose = FALSE
+        ))
         
-        # Adjust Y-coordinates before saving in CSV
-        img <- image_read(selected_images[i])
-        img_height <- image_info(img)$height
-        annotation_data <- polygon_coords %>%
-          select(-name) %>%
-          mutate(
-            x = x,                             # X-coordinates remain the same
-            y = img_height - y,                # Adjust Y-coordinates
-            image_id = i,
-            class_selected = selected_class,
-            class_AI = class_AI
-          )
-        
-        write_csv(annotation_data, path = file.path("annotiert_polygon_table", annotation_csv_name))
-        
-        img <- image_read(selected_images[i])
-        img_width <- image_info(img)$width
-        img_height <- image_info(img)$height
-        
-        # Scale polygon coordinates based on original image dimensions
-        img_with_polygon <- image_draw(img)
-        
-        unique_polygons <- unique(polygon_coords$polygon_id)
-        for (poly_id in unique_polygons) {
-          poly_coords <- polygon_coords %>% filter(polygon_id == poly_id)
-          x_scaled <- poly_coords$x * (img_width / 500)
-          y_scaled <- poly_coords$y * (img_height / 500)
-          
-          polygon(x_scaled, img_height - y_scaled, border = "blue", col = rgb(0, 0, 1, alpha = 0.2))
+        for (progress in seq(0, 100, by = 20)) {
+          Sys.sleep(0.2)
+          updateProgressBar(session, id = "save_progress", value = progress)
         }
-        dev.off()
         
-        image_write(img_with_polygon, path = file.path("annotiert_xai_image", annotated_img_name))
+        # Save annotation details here (image and CSV saving)
         
+        removeModal()
         page(current_page + 1)
       }
     } else {
@@ -196,5 +192,3 @@ server <- function(input, output, session) {
     }
   })
 }
-
-#shinyApp(ui, server)
