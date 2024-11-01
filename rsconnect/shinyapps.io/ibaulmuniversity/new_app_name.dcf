@@ -5,6 +5,6 @@ account: ibaulmuniversity
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13179087
-bundleId: 9290758
+bundleId: 9291173
 url: https://ibaulmuniversity.shinyapps.io/new_app_name/
 version: 1

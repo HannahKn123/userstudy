@@ -1,57 +1,76 @@
 library(shiny)
+library(shinyjs) 
+library(tibble)
 library(magick)
-library(shinyjs)
 library(readr)
 library(tidyverse)
+library(shinyWidgets)
+library(dplyr)
+library(purrr)
+library(ggplot2)  
 
 ui <- fluidPage(
   useShinyjs(),
   tags$head(
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"),
     tags$style(HTML("
       body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f7fa;
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8f9fa;
         color: #333;
       }
-      h3 {
-        font-weight: bold;
-        color: #2c3e50;
+      h3, h4 {
+        font-weight: 700;
+        color: #4a4a4a;
       }
-      .main-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .image-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      .highlight-container, .decision-container {
+        padding: 15px;
         background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
+        border: 2px solid #d3d3d3;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
       }
-      .btn-primary, .btn-secondary {
-        color: #ffffff !important;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
+      .highlight-container h4, .decision-container h4 {
+        margin-top: 0;
+        font-weight: bold;
+        font-size: 14px;
+        color: #ffffff;
+        padding: 8px 12px;
+        border-radius: 5px;
+        position: absolute;
+        top: -12px;
+        left: 20px;
       }
-      .btn-primary {
-        background-color: #3498db;
+      .highlight-container h4 {
+        background-color: #d3d3d3;
       }
-      .btn-secondary {
-        background-color: #95a5a6;
+      .decision-container h4 {
+        background-color: #d3d3d3;
       }
-      .select-input {
-        margin-top: 15px;
-        font-size: 16px;
+      .classification-section {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #d3d3d3;
+      }
+      .custom-dropdown select {
+        color: #4169E1;
+      }
+      /* Style to display two lines side by side */
+      .flex-container {
+        display: flex;
+        gap: 10px; /* Add space between the two lines */
+        align-items: center; /* Vertically aligns text in the middle */
       }
     "))
   ),
   
-  div(class = "main-container",
-      uiOutput("page_content")
+  div(class = "image-container",
+      uiOutput("page_content"),
+      shinyjs::hidden(div(id = "loading_msg", "Saving, please wait..."))
   )
 )
