@@ -15,7 +15,7 @@ source("helper.R")
 
 
 server <- function(input, output, session) {
-  
+  closeAllConnections()
   shinyjs::useShinyjs()
   
   # Nextcloud settings
