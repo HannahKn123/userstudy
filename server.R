@@ -7,16 +7,18 @@ library(tidyverse)
 library(shinyWidgets)
 library(dplyr)
 library(purrr)
-library(ggplot2)  # Optional
+library(ggplot2)
+
+# Lade helper.R für die save_to_nextcloud Funktion
+source("helper.R")
+
+
 
 server <- function(input, output, session) {
   
   shinyjs::useShinyjs()
   
-  # Set scale factor for displaying images at a larger size
-  scale_factor <- 1.5  # Define globally for use throughout the server function
-  
-  # Nextcloud settings for saving annotated results
+  # Nextcloud settings
   img_cloud_folder <- "annotation_result"
   csv_cloud_folder <- "annotation_result"
   username <- "zbc57"
@@ -68,39 +70,26 @@ server <- function(input, output, session) {
       class_number <- extract_class_from_filename(selected_images[i])
       image <- image_read(selected_images[i])
       
-      # Get image dimensions
+      # Get image dimensions for original size display
       img_info <- image_info(image)
       img_width <- img_info$width
       img_height <- img_info$height
       
-      # Define scaled display dimensions
-      display_width <- img_width * scale_factor
-      display_height <- img_height * scale_factor
-      
       # UI layout with AI and human decision boxes
       tagList(
-        # Wrapper for AI and Human boxes
         div(style = "display: flex; flex-direction: column; gap: 40px; width: 100%; margin: 0 auto;"),
-        
-        # AI Decision Box
         div(class = "highlight-container",
             style = "background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1200px;",  
             h4("AI Decision"),
-            
-            # AI prediction and highlighted areas explanation
             div(class = "flex-container", 
                 style = "display: flex; gap: 40px; width: 100%; align-items: stretch;",
-                
-                # AI-predicted city
-                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 32%; padding: 15px; min-height: 70px;",  
+                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 34%; padding: 15px; min-height: 70px;",  
                     div(style = "display: flex; text-align: left; width: 100%;",  
                         p("The AI recognized this image as taken in ", 
                           span(style = "color: #800080; font-weight: bold;", class_number), ".")
                     )
                 ),
-                
-                # Explanation of AI's highlighted areas
-                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 68%; padding: 15px; min-height: 70px;",  
+                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 66%; padding: 15px; min-height: 70px;",  
                     div(style = "display: flex; text-align: left; width: 100%;",  
                         p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
                           " shown below were key factors in its decision.")
@@ -108,46 +97,31 @@ server <- function(input, output, session) {
                 )
             )
         ),
-        
-        # Human Decision Box
         div(class = "decision-container",
             style = "background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1200px;",  
             h4("Human Decision"),
-            
-            # City selection and image annotation tools
             div(class = "flex-container", 
                 style = "display: flex; gap: 40px; width: 100%; align-items: stretch;",  
-                
-                # Replace City selection dropdown with button-styled radio buttons
-                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 32%; padding: 15px; flex-direction: column;",  
-                    div(style = "display: flex; flex-direction: column; width: 100%; height: 100%;",  
-                        
-                        # City selection text
+                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 34%; padding: 15px; flex-direction: column;",  
+                    div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 50px;",  
                         p("Take a close look at the image. Do you agree with the AI’s classification of this image as Berlin, or would you assign it to a different city? Please ", strong(style = "color: #4169E1;", "select your choice"), " below."),
-                        
-                        # Styled button group
-                        div(class = "btn-group-container", style = "display: flex; justify-content: center;",
-                            actionButton(inputId = paste0("class_", i, "_tel_aviv"), label = "Tel Aviv", class = "btn"),
-                            actionButton(inputId = paste0("class_", i, "_jerusalem"), label = "Jerusalem", class = "btn"),
-                            actionButton(inputId = paste0("class_", i, "_hamburg"), label = "Hamburg", class = "btn"),
-                            actionButton(inputId = paste0("class_", i, "_berlin"), label = "Berlin", class = "btn")
+                        div(class = "btn-group-container", style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;",
+                            actionButton(inputId = paste0("class_", i, "_tel_aviv"), label = "Tel Aviv", class = "btn", style = "width: 150px; text-align: center;"),
+                            actionButton(inputId = paste0("class_", i, "_jerusalem"), label = "Jerusalem", class = "btn", style = "width: 150px; text-align: center;"),
+                            actionButton(inputId = paste0("class_", i, "_hamburg"), label = "Hamburg", class = "btn", style = "width: 150px; text-align: center;"),
+                            actionButton(inputId = paste0("class_", i, "_berlin"), label = "Berlin", class = "btn", style = "width: 150px; text-align: center;")
                         )
+                        
                     )
                 ),
-                
-                # Image annotation tool (leave as is)
-                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 68%; padding: 15px; flex-direction: column;",  
+                div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 66%; padding: 15px; flex-direction: column;",  
                     div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
                         p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #4169E1; font-weight: bold;", "mark these key areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
                     ),
-                    
-                    # Display image at a larger size based on scale factor
                     div(style = "flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%;",  
                         plotOutput(paste0("imagePlot", i), click = paste0("image_click_", i), 
-                                   width = paste0(display_width, "px"), height = paste0(display_height, "px"))
+                                   width = paste0(img_width, "px"), height = paste0(img_height, "px"))
                     ),
-                    
-                    # Annotation buttons
                     div(style = "display: flex; gap: 10px; margin-top: 5px; justify-content: center;",  
                         actionButton(paste0("clear_", i), "Clear All Annotations", icon = icon("trash"), 
                                      class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
@@ -200,11 +174,10 @@ server <- function(input, output, session) {
       current_coords <- coords()
       polygon_id_val <- polygon_id()
       
-      # Adjust coordinates to match original image size for accurate saving
-      adjusted_x <- input[[paste0("image_click_", i)]]$x / scale_factor
-      adjusted_y <- input[[paste0("image_click_", i)]]$y / scale_factor
+      # Store the coordinates directly for display with scaling applied
+      adjusted_x <- input[[paste0("image_click_", i)]]$x
+      adjusted_y <- input[[paste0("image_click_", i)]]$y
       
-      # Store the coordinates with adjusted values
       current_coords <- add_row(
         current_coords,
         x = adjusted_x,
@@ -215,35 +188,25 @@ server <- function(input, output, session) {
       coords(current_coords)
     })
     
-    # Render the enlarged plot with scaled annotations
+    # Render the original-size plot with annotations
     output[[paste0("imagePlot", i)]] <- renderPlot({
       img <- image_read(selected_images[i])
       img_raster <- as.raster(img)
       
-      # Fetch image dimensions dynamically within renderPlot
+      # Get image dimensions for each image dynamically
       img_info <- image_info(img)
       img_width <- img_info$width
       img_height <- img_info$height
       
-      # Define the scaling factor and calculate display dimensions
-      display_width <- img_width * scale_factor
-      display_height <- img_height * scale_factor
+      plot(img_raster, xlab = "", ylab = "", bty = "n", asp = img_height / img_width) 
       
-      # Plot the image with adjusted aspect ratio for larger display
-      plot(img_raster, xlab = "", ylab = "", bty = "n", asp = display_height / display_width) 
       
-      # Fetch polygon coordinates and scale for display
+      # Display annotations at original size
       all_polygons <- coords() %>% filter(name == paste("polygon", i))
-      unique_polygons <- unique(all_polygons$polygon_id)
-      
-      for (poly_id in unique_polygons) {
+      for (poly_id in unique(all_polygons$polygon_id)) {
         polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
-        
-        # Scale coordinates for larger display
         if (nrow(polygon_coords) > 2) {
-          scaled_x <- polygon_coords$x * scale_factor
-          scaled_y <- polygon_coords$y * scale_factor
-          polygon(scaled_x, scaled_y, border = "blue", col = rgb(0, 0, 1, alpha = 0.2))
+          polygon(polygon_coords$x, polygon_coords$y, border = "blue", col = rgb(0, 0, 1, alpha = 0.2))
         }
       }
     })
@@ -251,6 +214,20 @@ server <- function(input, output, session) {
     # Clear all annotations
     observeEvent(input[[paste0("clear_", i)]], {
       coords(coords() %>% filter(name != paste("polygon", i)))
+    })
+    
+    # Delete last polygon
+    observeEvent(input[[paste0("delete_last_polygon", i)]], {
+      current_coords <- coords()
+      
+      # Find the maximum polygon_id for the current image (i)
+      max_polygon_id <- max(current_coords %>% filter(name == paste("polygon", i)) %>% pull(polygon_id), na.rm = TRUE)
+      
+      # Remove all points with the maximum polygon_id for the current image
+      updated_coords <- current_coords %>% 
+        filter(!(name == paste("polygon", i) & polygon_id == max_polygon_id))
+      
+      coords(updated_coords)
     })
     
     # Finalize polygon
@@ -268,31 +245,31 @@ server <- function(input, output, session) {
       input_filename <- tools::file_path_sans_ext(basename(selected_images[i]))
       class_AI <- extract_class_from_filename(selected_images[i])
       
-      # Check if both city selection and annotation are completed
-      polygon_missing <- selected_class == ""
+      # Save only if both a city is selected and there is an annotation
       polygon_coords <- coords() %>% filter(name == paste("polygon", i))
       annotation_missing <- nrow(polygon_coords) < 3  
+      city_not_selected <- selected_class == ""
       
-      if (annotation_missing && polygon_missing) {
+      if (annotation_missing && city_not_selected) {
         showModal(modalDialog(
           title = "Please choose a city and annotate the picture!",
-          "Please make sure to select a city from the buttons and annotate the picture before moving to the next page.",
+          "Make sure to select a city and annotate the picture before proceeding.",
           easyClose = TRUE
         ))
       } else if (annotation_missing) {
         showModal(modalDialog(
           title = "Please annotate the picture!",
-          "Please make sure to annotate the picture before moving to the next page.",
+          "Make sure to annotate the picture before proceeding.",
           easyClose = TRUE
         ))
-      } else if (polygon_missing) {
+      } else if (city_not_selected) {
         showModal(modalDialog(
           title = "Please choose a city!",
-          "Please make sure to select a city from the buttons before moving to the next page.",
+          "Make sure to select a city before proceeding.",
           easyClose = TRUE
         ))
       } else {
-        # Save functionality with progress bar
+        # Show progress bar for saving
         showModal(modalDialog(
           title = "Saving, please wait...",
           progressBar(id = "save_progress", value = 0, display_pct = TRUE),
@@ -300,14 +277,37 @@ server <- function(input, output, session) {
           easyClose = FALSE
         ))
         
+        # Progressively update the progress bar during saving
         for (progress in seq(0, 100, by = 20)) {
           Sys.sleep(0.2)
           updateProgressBar(session, id = "save_progress", value = progress)
         }
         
-        # Save annotation details here (image and CSV saving)
+        # Adjust y-coordinates for saving (no scaling)
+        img <- image_read(selected_images[i])
+        img_height <- image_info(img)$height
+        save_coords <- polygon_coords %>% mutate(y = img_height - y)
+        
+        # Save adjusted coordinates to CSV and upload to Nextcloud
+        csv_temp_path <- tempfile(fileext = ".csv")
+        write.csv(save_coords, csv_temp_path, row.names = FALSE)
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(input_filename, "_", selected_class, ".csv"), username, password)
+        
+        # Draw polygons on the image for saving
+        img <- image_draw(img)
+        for (poly_id in unique(save_coords$polygon_id)) {
+          poly_coords <- save_coords %>% filter(polygon_id == poly_id)
+          polygon(poly_coords$x, poly_coords$y, border = "blue", col = rgb(0, 0, 1, 0.2))
+        }
+        dev.off()
+        
+        # Save the annotated image temporarily and upload to Nextcloud
+        img_temp_path <- tempfile(fileext = ".png")
+        image_write(img, path = img_temp_path, format = "png")
+        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(input_filename, "_", selected_class, ".png"), username, password)
         
         removeModal()
+        
         page(current_page + 1)
       }
     } else {
