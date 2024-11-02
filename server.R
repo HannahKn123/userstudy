@@ -51,17 +51,17 @@ server <- function(input, output, session) {
     if (current_page == 1) {  # Initial instructions page
       tagList(
         div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h2("Welcome to the 'Guess the City' Study!", style = "color: #003366; font-weight: bold; text-align: center;"),
+            h2("Welcome to this Annotation Study!", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             # Paragraph with increased margin-bottom to add space
-            p("In this study, we aim to explore how artificial intelligence (AI) and human cognition can collaborate effectively. Your task involves looking at images and making city classifications.",
-              style = "text-align: center; margin-bottom: 50px;"),
+            p("In this study, we aim to explore how artificial intelligence (AI) and humans can collaborate effectively.",
+              style = "text-align: center; margin-top: 50px; margin-bottom: 50px;"),
             
             # User ID input
             div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
                 textInput("user_id_input", label = div(style = "font-weight: bold; color: #003366; text-align: center;", "Please enter your User ID:"),
                           placeholder = "User ID", width = '100%'),
-                div(style = "font-size: 12px; color: #666; margin-top: 10px; text-align: center;",
+                div(style = "font-size: 12px; color: #666; text-align: center;",
                     "The User ID is required to track your work.")
             ),
             
@@ -72,8 +72,79 @@ server <- function(input, output, session) {
             )
         )
       )
-    } else if (current_page >= 3 && current_page <= 12) {  # Annotation pages
-      i <- current_page - 2  # Image index
+    } else if (current_page == 2) {  # Second introduction page
+      tagList(
+        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            h2("Instructions", style = "color: #003366; font-weight: bold; text-align: center;"),
+            
+            # New instructions text with structured layout
+            
+            h4("Your Task:", style = "text-align: center; color: #003366;"),
+            
+            p(HTML("You will be shown <span style='color: #003366; font-weight: bold;'>10 images</span> of random locations from one of four cities: <span style='color: #003366; font-weight: bold;'>Berlin, Hamburg, Jerusalem, and Tel Aviv</span>. Each image is a Google Maps photo from one of these cities."),
+              style = "text-align: center; margin-bottom: 20px;"),
+            
+            tags$ol(
+              tags$li(
+                strong("City Classification:"), 
+                " Look at each image carefully and decide which of the four cities you think it shows. Our AI model has already made its own prediction, which we will share with you."
+              ),
+              tags$li(
+                strong("Marking Important Areas:"), 
+                "You'll also be shown key areas of the image that had the greatest impact on the AI's decision. Your task is to highlight the areas that you find most important for your own judgment. If you agree with the AI, you can select similar areas, or you can choose entirely different areas based on your perspective."              )
+            ),
+            
+            strong("Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
+            
+            h4("Bonus Opportunity:", style = "text-align: center; color: #003366; margin-top: 30px;"),
+            
+            p("You can earn an additional payment by providing precise markings and achieving at least 90% correct classifications. This bonus will be an extra x cents.",
+              style = "text-align: center; margin-top: 10px;"),
+            
+            p("Thank you for your participation!", style = "text-align: center; margin-top: 20px; font-weight: bold; color: #003366;"),
+            
+            # Continue button
+            div(style = "text-align: center; margin-top: 30px;",
+                actionButton("next_page", "Start Annotating", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                             style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
+            )
+        )
+      )
+    } else if (current_page == 3) {  # Third introduction page for polygon instructions
+      tagList(
+        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            
+            # Page Title
+            h2("Instructions for Marking Important Areas", style = "color: #003366; font-weight: bold; text-align: center;"),
+            
+            # Explanation for creating polygons
+            p("To mark important areas in the images, click on the image to create points around the region. These points will form a polygon that outlines the area you consider important.",
+              style = "text-align: center; margin-bottom: 20px;"),
+            
+            p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
+              style = "text-align: center; margin-bottom: 20px; font-weight: bold;"),
+            
+            p("Here you can see a very bad example on the left while the other two are good exaples"),
+              
+            # Display specific images (1.jpg, 2.jpg, 3.jpg) from the www/examples folder
+            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px;",
+                # Load and display each specific image
+                lapply(c("1.jpg", "2.jpg", "3.jpg"), function(img_name) {
+                  img_path <- file.path("examples", img_name)  # Use only the relative path from www
+                  tags$img(src = img_path, style = "max-width: 200px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);")
+                })
+            ),
+            
+            # Continue button
+            div(style = "text-align: center; margin-top: 30px;",
+                actionButton("next_page", "Proceed to Next Page", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                             style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
+            )
+        )
+      )
+    }
+    else if (current_page >= 4 && current_page <= 13) {  # Annotation pages
+      i <- current_page - 3  # Image index
       class_number <- extract_class_from_filename(selected_images[i])
       image <- image_read(selected_images[i])
       
@@ -144,7 +215,7 @@ server <- function(input, output, session) {
             )
         )
       )
-    } else if (current_page == 13) {
+    } else if (current_page == 14) {
       tagList(
         div(style = "text-align: center; margin-bottom: 20px;",
             h3("You are nearly done! Just answer the last two questions:")
@@ -335,8 +406,8 @@ server <- function(input, output, session) {
   observeEvent(input$next_page, {
     current_page <- page()
     
-    if (current_page >= 3 && current_page <= 12) {
-      i <- current_page - 2
+    if (current_page >= 4 && current_page <= 13) {
+      i <- current_page - 4
       selected_class <- selected_city()[i]  # Get selected city for current image
       input_filename <- tools::file_path_sans_ext(basename(selected_images[i]))
       class_AI <- extract_class_from_filename(selected_images[i])
