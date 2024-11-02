@@ -7,7 +7,7 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"),
     # Custom CSS for button styles and layout
-    tags$style(HTML("
+    tags$styl(HTML("
       .shiny-plot-output {
         padding: 0 !important;
         margin: 0 !important;

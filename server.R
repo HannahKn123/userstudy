@@ -24,6 +24,9 @@ server <- function(input, output, session) {
   username <- "zbc57"
   password <- "IBA2024Nein#"
   
+  user_id <- reactiveVal("")
+  
+  
   # Load images from directory
   img_dir <- "xai_image_2/"
   all_images <- list.files(img_dir, pattern = "\\.png$", full.names = TRUE)
@@ -67,7 +70,7 @@ server <- function(input, output, session) {
             
             # Continue button
             div(style = "display: flex; justify-content: center; margin-top: 30px;",
-                actionButton("next_page", "Continue to Next Page", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                actionButton("next_page", "Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
@@ -105,7 +108,7 @@ server <- function(input, output, session) {
             
             # Continue button
             div(style = "text-align: center; margin-top: 30px;",
-                actionButton("next_page", "Start Annotating", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                actionButton("next_page", "Annotation Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
@@ -124,12 +127,12 @@ server <- function(input, output, session) {
             p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
               style = "text-align: center; margin-bottom: 20px; font-weight: bold;"),
             
-            p("Here you can see a very bad example on the left while the other two are good exaples"),
+            p("Here you can see a very bad example on the left while the right is a good exaples"),
               
             # Display specific images (1.jpg, 2.jpg, 3.jpg) from the www/examples folder
             div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px;",
                 # Load and display each specific image
-                lapply(c("1.jpg", "2.jpg", "3.jpg"), function(img_name) {
+                lapply(c("1.jpg", "2.jpg"), function(img_name) {
                   img_path <- file.path("examples", img_name)  # Use only the relative path from www
                   tags$img(src = img_path, style = "max-width: 200px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);")
                 })
@@ -137,7 +140,7 @@ server <- function(input, output, session) {
             
             # Continue button
             div(style = "text-align: center; margin-top: 30px;",
-                actionButton("next_page", "Proceed to Next Page", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                actionButton("next_page", "Start", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
@@ -161,13 +164,13 @@ server <- function(input, output, session) {
                 h4("AI Decision"),
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 34%; padding: 15px; min-height: 10px;",  
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; min-height: 10px;",  
                         div(style = "display: flex; text-align: left; width: 100%;",  
                             p("The AI recognized this image as taken in ", 
                               span(style = "color: #800080; font-weight: bold;", class_number), ".")
                         )
                     ),
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 66%; padding: 15px; min-height: 10px;",  
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; min-height: 10px;",  
                         div(style = "display: flex; text-align: left; width: 100%;",  
                             p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
                               " shown below were key factors in its decision.")
@@ -180,7 +183,7 @@ server <- function(input, output, session) {
                 h4("Human Decision"),
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 34%; padding: 15px; flex-direction: column;",  
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
                         div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
                             p("Take a close look at the image. Do you agree with the AI’s classification of this image as Berlin, or would you assign it to a different city? Please ", strong(style = "color: #4169E1;", "select your choice"), " below."),
                             div(class = "btn-group-container", style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;",
@@ -191,7 +194,7 @@ server <- function(input, output, session) {
                             )
                         )
                     ),
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 66%; padding: 15px; flex-direction: column; align-items: center;",  
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                         div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
                             p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #4169E1; font-weight: bold;", "mark these key areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
                         ),
@@ -207,7 +210,7 @@ server <- function(input, output, session) {
                                          class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
                             actionButton(paste0("end_polygon_", i), "Complete Polygon", icon = icon("check"), 
                                          class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
-                            actionButton("next_page", "Next Image", icon = icon("arrow-right"), 
+                            actionButton("next_page", "Next", icon = icon("arrow-right"), 
                                          class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
                         )
                     )
@@ -239,7 +242,7 @@ server <- function(input, output, session) {
             
             # Next button
             div(style = "text-align: center; margin-top: 20px;",
-                actionButton("next_page", "Next Page", icon = icon("arrow-right"), class = "btn-primary btn-lg")
+                actionButton("next_page", "Last Page", icon = icon("arrow-right"), class = "btn-primary btn-lg")
             )
         )
       )
@@ -346,7 +349,9 @@ server <- function(input, output, session) {
     })
     
     
-    
+    observeEvent(input$user_id_input, {
+      user_id(input$user_id_input)
+    })
     
     
     
@@ -407,7 +412,7 @@ server <- function(input, output, session) {
     current_page <- page()
     
     if (current_page >= 4 && current_page <= 13) {
-      i <- current_page - 4
+      i <- current_page - 3
       selected_class <- selected_city()[i]  # Get selected city for current image
       input_filename <- tools::file_path_sans_ext(basename(selected_images[i]))
       class_AI <- extract_class_from_filename(selected_images[i])
@@ -458,7 +463,7 @@ server <- function(input, output, session) {
         # Save adjusted coordinates to CSV and upload to Nextcloud
         csv_temp_path <- tempfile(fileext = ".csv")
         write.csv(save_coords, csv_temp_path, row.names = FALSE)
-        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(input_filename, "_", selected_class, ".csv"), username, password)
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class, ".csv"), username, password)
         
         # Draw polygons on the image for saving
         img <- image_draw(img)
@@ -471,17 +476,32 @@ server <- function(input, output, session) {
         # Save the annotated image temporarily and upload to Nextcloud
         img_temp_path <- tempfile(fileext = ".png")
         image_write(img, path = img_temp_path, format = "png")
-        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(input_filename, "_", selected_class, ".png"), username, password)
+        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class, ".png"), username, password)
         
         removeModal()
         
         page(current_page + 1)  # Move to the next page after processing
       }
-    } else {
+    } else if  (page() == 1) {  # Check if on the first page
+        if (input$user_id_input == "") {
+          # Show a warning if User ID is empty
+          showModal(modalDialog(
+            title = "User ID Required",
+            "Please enter your User ID to proceed.",
+            easyClose = TRUE
+          ))
+        } else {
+          # Store the User ID and go to the next page
+          user_id(input$user_id_input)
+          page(2)  # Move to the second page
+        }
+    }else {
       page(current_page + 1)  # Move to the next page for non-image pages
     }
     
   })
+  
+
   
   # Add tab switching based on page
   observeEvent(input$next_page, {
