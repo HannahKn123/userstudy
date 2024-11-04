@@ -251,50 +251,6 @@ def gradCAMplusplus(img_array, model, grad_conv_model, classifier_layer_names, t
 
     return heatmap, important_pixels
 
-
-def upsample_gradCAM(activations):
-    heatmap = cv2.resize(activations, (448, 448))
-    heatmap /= np.sum(heatmap)
-
-    return heatmap
-
-
-# %%
-def explain_gradCAM(activations, img_index):
-    heatmap = cv2.resize(activations, (448, 448))
-    heatmap = np.expand_dims(heatmap, axis=-1)
-    heatmap /= np.sum(heatmap)
-    explanation = heatmap * X_expl[img_index]
-    explanation -= np.min(explanation)
-    explanation /= np.max(explanation)
-    explanation = cv2.cvtColor(explanation, cv2.COLOR_BGR2RGB)
-    # plt.matshow(explanation)
-    # plt.show()
-
-    return explanation
-
-
-# %%
-def visualize_gradCAM(activations, img_index, alpha):
-    heatmap = cv2.resize(activations, (448, 448))
-    heatmap = (heatmap * 255).astype("uint8")
-    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-    superimposed_img = heatmap * alpha + X_expl[img_index]
-    superimposed_img = np.clip(superimposed_img, 0, 255).astype("uint8")
-    superimposed_img = cv2.cvtColor(superimposed_img, cv2.COLOR_BGR2RGB)
-
-    # plt.matshow(superimposed_img)
-    # plt.show()
-
-    return superimposed_img
-
-
-def plot_attention_map(attention_map):
-    plt.imshow(attention_map)
-    plt.colorbar()
-    plt.show()
-
-
 def save_important_pixels_to_excel(important_pixels, output_path):
     # Umwandeln der wichtigen Pixel in ein DataFrame
     df = pd.DataFrame(important_pixels, columns=["X", "Y", "Importance"])
