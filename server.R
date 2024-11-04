@@ -27,6 +27,7 @@ server <- function(input, output, session) {
   user_id <- reactiveVal("")
   q1_response <- reactiveVal("")
   q2_response <- reactiveVal("")
+  selected_confidence <- reactiveVal(rep("", 10))  # Initialize for 10 images
   
   
   # Load images from directory
@@ -194,7 +195,17 @@ server <- function(input, output, session) {
                                 actionButton(inputId = paste0("class_", i, "_hamburg"), label = "Hamburg", class = "btn", style = "width: 150px; text-align: center;"),
                                 actionButton(inputId = paste0("class_", i, "_berlin"), label = "Berlin", class = "btn", style = "width: 150px; text-align: center;")
                             )
+                        ),
+                        div(
+                          style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 2px; margin-top: 2px; text-align: center; align-items: center;",
+                          selectInput(
+                            inputId = paste0("confidence_", i), 
+                            label = "How confident are you in your decision?",
+                            choices = c("", "Very unsure", "Unsure", "Neutral", "Sure", "Very sure"),
+                            selected = ""
+                          )
                         )
+                        
                     ),
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                         div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
@@ -330,6 +341,15 @@ server <- function(input, output, session) {
       })
     })
     
+    # Observers to handle dropdown selection and save the value
+    lapply(1:10, function(i) {
+      observeEvent(input[[paste0("confidence_", i)]], {
+        confidence_list <- selected_confidence()
+        confidence_list[i] <- input[[paste0("confidence_", i)]]
+        selected_confidence(confidence_list)
+      })
+    })
+    
     
     
     observeEvent(input[[paste0("image_click_", i)]], {
@@ -424,6 +444,8 @@ server <- function(input, output, session) {
     if (current_page >= 4 && current_page <= 13) {
       i <- current_page - 3
       selected_class <- selected_city()[i]  # Get selected city for current image
+      confidence_level <- selected_confidence()[i]  # Get selected confidence for current image
+      
       input_filename <- tools::file_path_sans_ext(basename(selected_images[i]))
       class_AI <- extract_class_from_filename(selected_images[i])
       
@@ -431,6 +453,7 @@ server <- function(input, output, session) {
       polygon_coords <- coords() %>% filter(name == paste("polygon", i))
       annotation_missing <- nrow(polygon_coords) < 3  
       city_not_selected <- selected_class == ""
+      confidence_level_missing <- confidence_level == ""
       
       if (annotation_missing && city_not_selected) {
         showModal(modalDialog(
@@ -442,6 +465,12 @@ server <- function(input, output, session) {
         showModal(modalDialog(
           title = "Please annotate the picture!",
           "Make sure to annotate the picture before proceeding.",
+          easyClose = TRUE
+        ))
+      } else if (confidence_level_missing) {
+        showModal(modalDialog(
+          title = "Please choose a confidence level!",
+          "Make sure to select a confidence level before proceeding.",
           easyClose = TRUE
         ))
       } else if (city_not_selected) {
@@ -473,7 +502,7 @@ server <- function(input, output, session) {
         # Save adjusted coordinates to CSV and upload to Nextcloud
         csv_temp_path <- tempfile(fileext = ".csv")
         write.csv(save_coords, csv_temp_path, row.names = FALSE)
-        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class, ".csv"), username, password)
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class,  "_",  confidence_level, ".csv"), username, password)
         
         # Draw polygons on the image for saving
         img <- image_draw(img)
@@ -486,7 +515,7 @@ server <- function(input, output, session) {
         # Save the annotated image temporarily and upload to Nextcloud
         img_temp_path <- tempfile(fileext = ".png")
         image_write(img, path = img_temp_path, format = "png")
-        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class, ".png"), username, password)
+        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(user_id(), "_", input_filename, "_", selected_class, "_",  confidence_level, ".png"), username, password)
         
         removeModal()
         
