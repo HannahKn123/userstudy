@@ -127,14 +127,14 @@ server <- function(input, output, session) {
             p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
               style = "text-align: center; margin-bottom: 20px; font-weight: bold;"),
             
-            p("Here you can see a very bad example on the left while the right is a good exaples"),
+            p("Here you can see a very good example on the left while the right is a very bad exaple"),
               
-            # Display specific images (1.jpg, 2.jpg, 3.jpg) from the www/examples folder
-            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px;",
+            # Display specific images (1.jpg, 2.jpg) from the www/examples folder
+            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 50px;",
                 # Load and display each specific image
-                lapply(c("1.jpg", "2.jpg"), function(img_name) {
+                lapply(c("11.png", "12.png"), function(img_name) {
                   img_path <- file.path("examples", img_name)  # Use only the relative path from www
-                  tags$img(src = img_path, style = "max-width: 200px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);")
+                  tags$img(src = img_path, style = "max-width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);")
                 })
             ),
             

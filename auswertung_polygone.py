@@ -23,13 +23,12 @@ for csv_file in os.listdir(annotations_dir):
         image_base_name = '_'.join(image_base_name.split('_')[:-1])  # Removes everything after the last "_"
         print(image_base_name)
 
-        # Remove 'annotated_' prefix if it exists
-        if image_base_name.startswith('annotated_'):
-            image_base_name = image_base_name.replace('annotated_', '', 1)
+        new_filename = "_".join(image_base_name.split("_", 2)[1:])
+        print(new_filename)
 
         # Define the paths for the CSV and the corresponding image
         csv_path = os.path.join(annotations_dir, csv_file)
-        image_path = os.path.join(images_dir, f'{image_base_name}.png')  # Image file with .png extension
+        image_path = os.path.join(images_dir, f'{new_filename}.png')  # Image file with .png extension
 
         # Check if the corresponding image file exists
         if not os.path.exists(image_path):
