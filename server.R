@@ -25,6 +25,8 @@ server <- function(input, output, session) {
   password <- "IBA2024Nein#"
   
   user_id <- reactiveVal("")
+  q1_response <- reactiveVal("")
+  q2_response <- reactiveVal("")
   
   
   # Load images from directory
@@ -353,6 +355,14 @@ server <- function(input, output, session) {
       user_id(input$user_id_input)
     })
     
+    # Store responses to the questions
+    observeEvent(input$q1, {
+      q1_response(input$q1)
+    })
+    
+    observeEvent(input$q2, {
+      q2_response(input$q2)
+    })
     
     
     # Render the original-size plot with annotations
@@ -495,7 +505,38 @@ server <- function(input, output, session) {
           user_id(input$user_id_input)
           page(2)  # Move to the second page
         }
-    }else {
+    } else if (current_page == 14) {  # Last page to save the questionnaire responses
+      # Ensure that User ID and responses are present
+      if (user_id() == "" || q1_response() == "" || q2_response() == "") {
+        showModal(modalDialog(
+          title = "Incomplete Responses",
+          "Please answer all questions before submitting.",
+          easyClose = TRUE
+        ))
+      } else {
+        # Create a tibble to store responses and save as CSV
+        responses <- tibble(
+          User_ID = user_id(),
+          Question1 = q1_response(),
+          Question2 = q2_response()
+        )
+        
+        # Write responses to a temporary CSV file
+        csv_temp_path <- tempfile(fileext = ".csv")
+        write.csv(responses, csv_temp_path, row.names = FALSE)
+        
+        # Save the file to Nextcloud with User ID in the filename
+        filename <- paste0(user_id(), "_responses.csv")
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, filename, username, password)
+        
+        showModal(modalDialog(
+          title = "Responses Saved",
+          "Thank you! Your responses have been saved successfully.",
+          easyClose = TRUE
+        ))
+        page(current_page + 1)
+      }
+    } else {
       page(current_page + 1)  # Move to the next page for non-image pages
     }
     
