@@ -18,7 +18,7 @@ for filename in os.listdir(input_folder):
         # Vergrößere das Bild (hier auf das Doppelte der Originalgröße)
         new_width = image.width * 2
         new_height = image.height * 2
-        resized_image = image.resize((new_width, new_height), Image.ANTIALIAS)
+        resized_image = image.resize((new_width, new_height), Image.LANCZOS)
 
         # Speichere das vergrößerte Bild im Ausgabeordner unter demselben Namen
         output_path = os.path.join(output_folder, filename)
