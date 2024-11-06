@@ -5,6 +5,6 @@ account: ibaulmuniversity
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13249056
-bundleId: 9322964
+bundleId: 9323232
 url: https://ibaulmuniversity.shinyapps.io/annotation_userstudy/
 version: 1
