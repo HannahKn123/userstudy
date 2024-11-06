@@ -2,8 +2,8 @@ import os
 from PIL import Image
 
 # Ordnerpfade
-input_folder = "xai_image"
-output_folder = "xai_image_2"
+input_folder = "1_org_image"
+output_folder = "1_study_input"
 
 # Erstelle den Ausgabeordner, falls er noch nicht existiert
 os.makedirs(output_folder, exist_ok=True)

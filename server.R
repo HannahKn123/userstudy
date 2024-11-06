@@ -26,8 +26,8 @@ server <- function(input, output, session) {
   shinyjs::useShinyjs()
   
   # Nextcloud settings
-  img_cloud_folder <- "annotation_result"
-  csv_cloud_folder <- "annotation_result"
+  img_cloud_folder <- "annotation_result_image"
+  csv_cloud_folder <- "annotation_result_csv"
   username <- "zbc57"
   password <- "IBA2024Nein#"
   
@@ -39,7 +39,7 @@ server <- function(input, output, session) {
   confidence_level_6 <- reactiveVal(NULL)
   
   # Load images from directory
-  img_dir <- "xai_image_2/"
+  img_dir <- "1_study_input/"
   all_images <- list.files(img_dir, pattern = "\\.png$", full.names = TRUE)
   selected_images <- sample(all_images, 10)  # Randomly select 10 images
   
@@ -52,7 +52,7 @@ server <- function(input, output, session) {
   }
   
   # Reactive values for page navigation, coordinates, and polygon IDs
-  page <- reactiveVal(8)
+  page <- reactiveVal(1)
   coords <- reactiveVal(value = tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
   polygon_id <- reactiveVal(1)
   

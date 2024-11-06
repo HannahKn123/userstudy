@@ -3,11 +3,11 @@ import shutil
 
 # Liste der Ordner, deren Inhalte gelöscht werden sollen
 folders = [
-    './annotiert_aus_polygon_image',
-    './annotiert_blank_pixel_image',
-    './annotiert_pixel_table',
-    './annotiert_polygon_table',
-    './annotiert_xai_image',
+    './1_auswertung_results/annotiert_aus_polygon_image',
+    './1_auswertung_results/annotiert_blank_pixel_image',
+    './1_auswertung_results/annotiert_pixel_table',
+    './1_download_study/download_polygon_table',
+    './1_download_study/download_polygone_image',
 ]
 
 # Durchlaufe jeden Ordner und lösche alle Dateien und Unterordner darin

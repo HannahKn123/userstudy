@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 
 
 # Directories for input and output
-annotations_dir = './annotiert_polygon_table'  # Folder containing CSV files
-images_dir = './org_image'  # Folder containing image files in .png format
-output_dir_1 = './annotiert_blank_pixel_image'  # Folder to save results
-output_dir_2 = './annotiert_aus_polygon_image'
-output_dir_3 = './annotiert_pixel_table'
+annotations_dir = '1_download_study/download_polygon_table'  # Folder containing CSV files
+images_dir = '1_study_input'  # Folder containing image files in .png format
+output_dir_1 = '1_auswertung_results/annotiert_blank_pixel_image'  # Folder to save results
+output_dir_2 = '1_auswertung_results/annotiert_aus_polygon_image'
+output_dir_3 = '1_auswertung_results/annotiert_pixel_table'
 
 # Process each CSV file in the annotations directory
 for csv_file in os.listdir(annotations_dir):
