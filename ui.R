@@ -33,8 +33,8 @@ ui <- fluidPage(
         background-color: #b0b0b0;
       }
       .btn-group-container .btn.selected {
-        background-color: #4169E1;
-        border-color: #4169E1;
+        background-color: #FFA500;
+        border-color: #FFA500;
       }
     
       body {
@@ -92,7 +92,7 @@ ui <- fluidPage(
         justify-content: center;
       }
       .custom-dropdown select {
-        color: #4169E1;
+        color: #FFA500;
       }
       .left-align-text { 
         text-align: left;
