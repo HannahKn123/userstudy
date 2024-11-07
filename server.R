@@ -73,9 +73,9 @@ server <- function(input, output, session) {
             
             # User ID input
             div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
-                textInput("user_id_input", label = div(style = "font-weight: bold; color: #003366; text-align: center;", "Please enter your User ID:"),
+                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center; margin-bottom: 20px; margin-top: 20px;", "Please enter your User ID:"),
                           placeholder = "User ID", width = '100%'),
-                div(style = "font-size: 12px; color: #666; text-align: center;",
+                div(style = "font-size: 12px; color: #666; text-align: center; margin-top: 20px;",
                     "The User ID is required to track your work.")
             ),
             
@@ -92,30 +92,52 @@ server <- function(input, output, session) {
             h2("Instructions", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             # New instructions text with structured layout
-            
-            h4("Your Task:", style = "text-align: center; color: #003366;"),
+            h4("Your Task:", style = "margin-top: 50px; text-align: center; color: #003366;"),
             
             p(HTML("You will be shown <span style='color: #003366; font-weight: bold;'>10 images</span> of random locations from one of four cities: <span style='color: #003366; font-weight: bold;'>Berlin, Hamburg, Jerusalem, and Tel Aviv</span>. Each image is a Google Maps photo from one of these cities."),
-              style = "text-align: center; margin-bottom: 20px;"),
+              style = "text-align: center; margin-bottom: 50px;"),
             
-            tags$ol(
-              tags$li(
-                strong("City Classification:"), 
-                " Look at each image carefully and decide which of the four cities you think it shows. Our AI model has already made its own prediction, which we will share with you."
-              ),
-              tags$li(
-                strong("Marking Important Areas:"), 
-                "You'll also be shown key areas of the image that had the greatest impact on the AI's decision. Your task is to highlight the areas that you find most important for your own judgment. If you agree with the AI, you can select similar areas, or you can choose entirely different areas based on your perspective."              )
+            tags$ol(style = "list-style-type: none; padding-left: 0;",  # Removes bullets and indentation
+                    tags$li(
+                      div(style = "text-align: left; margin-bottom: 20px;",
+                          strong("City Classification:"),
+                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
+                                  tags$li("For each image, the tool will also display the AI’s prediction."),
+                                  tags$li("Review the image carefully, then select the city", strong("you"), "believe it represents.")
+                          )
+                      )
+                    ),
+                    tags$li(
+                      div(style = "text-align: left; margin-bottom: 20px;",
+                          strong("Marking Important Areas:"),
+                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
+                                  tags$li("Each image displays the regions that were most important for the AI's decision, highlighted for your reference."),
+                                  tags$li("Using the annotation tool, highlight specific areas in the image that influenced", strong("your"), "decision.")
+                          )
+                      )
+                    ),
+                    tags$li(
+                      div(style = "text-align: left; margin-bottom: 20px;",
+                          strong("Selecting Confidence Level:"),
+                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
+                                  tags$li("Choose a confidence level for each decision to indicate how certain you are of your choice."),
+                                  tags$li("Five levels are available, ranging from 'Very Unsure' to 'Very Sure.'")
+                          )
+                      )
+                    )
             ),
             
-            strong("Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
+            div(
+              strong("Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
+              style = "margin-top: 50px; color: red;"
+            ),
             
-            h4("Bonus Opportunity:", style = "text-align: center; color: #003366; margin-top: 30px;"),
+            h4("Bonus Opportunity:", style = "text-align: center; color: #003366; margin-top: 50px;"),
             
             p("You can earn an additional payment by providing precise markings and achieving at least 90% correct classifications. This bonus will be an extra x cents.",
               style = "text-align: center; margin-top: 10px;"),
             
-            p("Thank you for your participation!", style = "text-align: center; margin-top: 20px; font-weight: bold; color: #003366;"),
+            p("Thank you for your participation!", style = "text-align: center; margin-top: 50px; font-weight: bold; color: #003366;"),
             
             # Continue button
             div(style = "text-align: center; margin-top: 30px;",
@@ -124,24 +146,51 @@ server <- function(input, output, session) {
             )
         )
       )
+      
     } else if (current_page == 3) {  # Third introduction page for polygon instructions
       tagList(
-        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             
             # Page Title
-            h2("Instructions for Marking Important Areas", style = "color: #003366; font-weight: bold; text-align: center;"),
+            h2("Instructions for Marking Important Areas", style = "margin-top: 20px; color: #003366; font-weight: bold; text-align: center;"),
             
             # Explanation for creating polygons
-            p("To mark important areas in the images, click on the image to create points around the region. These points will form a polygon that outlines the area you consider important.",
-              style = "text-align: center; margin-bottom: 20px;"),
+           
+            tags$ol(
+              div(style = "text-align: left; margin-top: 50px;",
+                  strong("Forming a Polygon:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("Begin by clicking on the image. Each click adds a point that will help define the boundaries of the area you find significant."),
+                          tags$li("For best results, start placing points around the outer edges of the area to create an outline that encompasses the entire region."),
+                          tags$li("Continue clicking along the perimeter of the area, placing points close enough to capture the shape accurately."),
+                          tags$li("Once you've added several points, the tool will connect them to form a polygon, which serves as a visual boundary around the area you want to highlight.")
+                  )
+              ),
+              
+              div(style = "text-align: left; margin-top: 20px;",  # Adds space between sections
+                  strong("Delete Annotations:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("You can modify your annotations by either clearing all points or deleting the last polygon drawn if it doesn’t look right.")
+                  )
+              ),
+              
+              div(style = "text-align: left; margin-top: 20px;",  # Adds space between sections
+                  strong("Completing the Annotation:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("After outlining an area, you can end the current polygon and start a new one if you need to highlight multiple regions within the same image."),
+                          tags$li("When you’re satisfied with the outline, complete the polygon to finalize the area.")
+                  )
+              )
+            ),
             
+          
             p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
-              style = "text-align: center; margin-bottom: 20px; font-weight: bold;"),
+              style = "text-align: center; margin-bottom: 50px;  margin-top: 50px; color: red;  font-weight: bold;"),
             
-            p("Here you can see a very good example on the left while the right is a very bad exaple"),
+            p("Here you can see a very good example on the left while the right is a very bad example"),
               
             # Display specific images (1.jpg, 2.jpg) from the www/examples folder
-            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 50px;",
+            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 40px;",
                 # Load and display each specific image
                 lapply(c("11.png", "12.png"), function(img_name) {
                   img_path <- file.path("examples", img_name)  # Use only the relative path from www
@@ -194,7 +243,7 @@ server <- function(input, output, session) {
                       style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                       div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
                           div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
-                              p("Take a close look at the image. This is an Attention Check. Please ", strong(style = "color: #4169E1;", "select Berlin"), " below."),
+                              p("Take a close look at the image. This is an Attention Check. Please ", strong(style = "color: #FFA500;", "select Berlin"), " below."),
                               div(class = "btn-group-container", style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;",
                                   actionButton("class_6_tel_aviv", label = "Tel Aviv", class = "btn", style = "width: 150px; text-align: center;"),
                                   actionButton("class_6_jerusalem", label = "Jerusalem", class = "btn", style = "width: 150px; text-align: center;"),
@@ -203,7 +252,7 @@ server <- function(input, output, session) {
                               )
                           ),
                           div(
-                            style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 2px; margin-top: 2px; text-align: center; align-items: center;",
+                            style = "display: flex; flex-direction: column; width: 100%; height: 200%; gap: 2px; margin-top: 2px; text-align: center; align-items: center;",
                             selectInput(
                               "confidence_6", 
                               label = "How confident are you in your decision?",
@@ -214,7 +263,7 @@ server <- function(input, output, session) {
                       ),
                       div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                           div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
-                              p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #4169E1; font-weight: bold;", "mark these key areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
+                              p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #FFA500; font-weight: bold;", "mark the street sign areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
                           ),
                           # Display the image for annotation
                           div(style = paste("display: flex; justify-content: center; align-items: center; width:", img_width, "px; height:", img_height, "px; padding: 0; margin: 0;"),
@@ -278,7 +327,7 @@ server <- function(input, output, session) {
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
                         div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
-                            p("Take a close look at the image. Do you agree with the AI’s classification of this image as Berlin, or would you assign it to a different city? Please ", strong(style = "color: #4169E1;", "select your choice"), " below."),
+                            p("Take a close look at the image. Do you agree with the AI’s classification of this image as Berlin, or would you assign it to a different city? Please ", strong(style = "color: #FFA500;", "select your choice"), " below."),
                             div(class = "btn-group-container", style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;",
                                 actionButton(inputId = paste0("class_", i, "_tel_aviv"), label = "Tel Aviv", class = "btn", style = "width: 150px; text-align: center;"),
                                 actionButton(inputId = paste0("class_", i, "_jerusalem"), label = "Jerusalem", class = "btn", style = "width: 150px; text-align: center;"),
@@ -287,7 +336,7 @@ server <- function(input, output, session) {
                             )
                         ),
                         div(
-                          style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 2px; margin-top: 2px; text-align: center; align-items: center;",
+                          style = "display: flex; flex-direction: column; width: 100%; height: 200%; gap: 2px; margin-top: 2px; text-align: center; align-items: center;",
                           selectInput(
                             inputId = paste0("confidence_", i), 
                             label = "How confident are you in your decision?",
@@ -299,7 +348,7 @@ server <- function(input, output, session) {
                     ),
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                         div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
-                            p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #4169E1; font-weight: bold;", "mark these key areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
+                            p("Review these highlighted areas carefully. Which parts of the image led you to your decision? Please ", span(style = "color: #FFA500; font-weight: bold;", "mark these key areas as precisely as possible"), " using the annotation tool. Before proceeding, ensure that you’ve marked all features you consider important.")
                         ),
                         # Outer div to center the image
                         div(style = paste("display: flex; justify-content: center; align-items: center; width:", img_width, "px; height:", img_height, "px; padding: 0; margin: 0;"),
@@ -388,7 +437,7 @@ server <- function(input, output, session) {
     for (poly_id in unique(all_polygons$polygon_id)) {
       polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
       if (nrow(polygon_coords) > 2) {
-        polygon(polygon_coords$x, polygon_coords$y, border = "blue", col = rgb(0, 0, 1, 0.2))
+        polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
       }
     }
   })
@@ -566,7 +615,7 @@ server <- function(input, output, session) {
       for (poly_id in unique(all_polygons$polygon_id)) {
         polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
         if (nrow(polygon_coords) > 2) {
-          polygon(polygon_coords$x, polygon_coords$y, border = "blue", col = rgb(0, 0, 1, alpha = 0.2))
+          polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
         }
       }
     })
@@ -609,6 +658,17 @@ server <- function(input, output, session) {
           "Make sure to select a city before proceeding.",
           easyClose = TRUE
         ))
+      } else if (selected_city_6() != "Berlin") {
+          showModal(modalDialog(
+            title = div(style = "color: red;", "ATTENTION CHECK FAILED"),  # Make title red
+            "The app will now close.",
+            easyClose = TRUE,
+            footer = NULL
+          ))
+          
+          # Close the app after showing the modal
+          delay(3000, stopApp())  # Delay to give time to read the message (2 seconds)
+          
       } else if (is.null(confidence_level_6()) || confidence_level_6() == "") {
         showModal(modalDialog(
           title = "Please choose a confidence level!",
@@ -664,7 +724,7 @@ server <- function(input, output, session) {
         img <- image_draw(img)
         for (poly_id in unique(save_coords$polygon_id)) {
           poly_coords <- save_coords %>% filter(polygon_id == poly_id)
-          polygon(poly_coords$x, poly_coords$y, border = "blue", col = rgb(0, 0, 1, 0.2))
+          polygon(poly_coords$x, poly_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
         }
         dev.off()  # Close the drawing device
         
@@ -743,7 +803,7 @@ server <- function(input, output, session) {
         img <- image_draw(img)
         for (poly_id in unique(save_coords$polygon_id)) {
           poly_coords <- save_coords %>% filter(polygon_id == poly_id)
-          polygon(poly_coords$x, poly_coords$y, border = "blue", col = rgb(0, 0, 1, 0.2))
+          polygon(poly_coords$x, poly_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
         }
         dev.off()
         
@@ -807,6 +867,11 @@ server <- function(input, output, session) {
   })
   
 
+  # Close the app when the close button is pressed
+  observeEvent(input$close_app, {
+    stopApp()  # Stops the Shiny app and closes the window
+  })
+  
   
   # Add tab switching based on page
   observeEvent(input$next_page, {
