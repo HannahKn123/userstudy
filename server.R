@@ -14,11 +14,21 @@ source("helper.R")
 
 # Load the image globally so it's accessible throughout the app
 loaded_image <- image_read("www/img_test_Berlin.png")
+loaded_image_ueb <- image_read("www/ueben_img.png")
 
 # Get image dimensions for display at original size
 img_info <- image_info(loaded_image)
 img_width <- img_info$width
 img_height <- img_info$height
+
+# Get image dimensions for display at original size
+img_info_ueb <- image_info(loaded_image_ueb)
+img_width_ueb  <- img_info_ueb$width
+img_height_ueb  <- img_info_ueb$height
+
+
+
+
 
 
 server <- function(input, output, session) {
@@ -52,7 +62,7 @@ server <- function(input, output, session) {
   }
   
   # Reactive values for page navigation, coordinates, and polygon IDs
-  page <- reactiveVal(1)
+  page <- reactiveVal(4)
   coords <- reactiveVal(value = tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
   polygon_id <- reactiveVal(1)
   
@@ -81,7 +91,7 @@ server <- function(input, output, session) {
             
             # Continue button
             div(style = "display: flex; justify-content: center; margin-top: 30px;",
-                actionButton("next_page", "Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                actionButton("next_page", "Continue to Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
@@ -141,7 +151,7 @@ server <- function(input, output, session) {
             
             # Continue button
             div(style = "text-align: center; margin-top: 30px;",
-                actionButton("next_page", "Annotation Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+                actionButton("next_page", "Continue to Annotation Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
@@ -205,7 +215,36 @@ server <- function(input, output, session) {
             )
         )
       )
-      } else if (current_page == 8) {  # Page 6 content with updated text for annotation
+    } else if (current_page == 4){
+      # Load and display the specific image for annotation
+      tagList(
+        div(style = "margin-top: 20px;background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
+            div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
+                p("Please practice to annotate all the figures. First draw polygones around each of the shapes. Next delete the polygone around the yellow one again to proceed")
+            ),
+            
+            div(style = "margin-bottom: 20px; width: 100%; text-align: left; margin-bottom: 10px;",
+                p("Please practice to annotate all the figures. First draw polygones around each of the shapes. Next delete the polygone around the yellow one again to proceed")
+            ),
+            
+            # Display the image for annotation
+            div(style = paste("display: flex; justify-content: center; align-items: center; width:", img_width_ueb, "px; height:", img_height_ueb, "px; padding: 0; margin: 0;"),
+                plotOutput("imagePlot_uebung", click = "image_click_uebung", 
+                           width = paste0(img_width_ueb, "px"), height = paste0(img_height_ueb, "px"))
+            ),
+            div(style = "display: flex; gap: 10px; margin-top: 5px; justify-content: center;",  
+                actionButton("clear_uebung", "Clear All Annotations", icon = icon("trash"), 
+                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                actionButton("delete_last_polygon_uebung", "Delete Last Polygon", icon = icon("trash"), 
+                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                actionButton("end_polygon_uebung", "Complete Polygon", icon = icon("check"), 
+                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                actionButton("next_page", "Next", icon = icon("arrow-right"), 
+                             class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
+            )
+        )
+      )
+    } else if (current_page == 9) {  # Page 6 content with updated text for annotation
         # Load and display the specific image for annotation
         image_path <- "www/img_test_Berlin.png"
         loaded_image <- image_read(image_path)
@@ -285,11 +324,11 @@ server <- function(input, output, session) {
               )
           )
         )
-      } else if (current_page >= 4 && current_page <= 13) {  # Annotation pages
+      } else if (current_page >= 5 && current_page <= 14) {  # Annotation pages
       coords(tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
       polygon_id(1)  # Reset polygon ID
         
-      i <- current_page - 3  # Image index
+      i <- current_page - 4  # Image index
       class_number <- extract_class_from_filename(selected_images[i])
       image <- image_read(selected_images[i])
       
@@ -370,7 +409,7 @@ server <- function(input, output, session) {
             )
         )
       )
-    } else if (current_page == 14) {
+    } else if (current_page == 15) {
       tagList(
         div(style = "text-align: center; margin-bottom: 20px;",
             h3("You are nearly done! Just answer the last two questions:")
@@ -423,6 +462,10 @@ server <- function(input, output, session) {
   
   
   
+ ############################################################################## 
+  
+  
+  
   # Render the plot with the loaded image and handle annotations
   output$imagePlot_6 <- renderPlot({
     # Render the image and display any drawn polygons
@@ -441,6 +484,29 @@ server <- function(input, output, session) {
       }
     }
   })
+  
+  # Render the plot with the loaded image and handle annotations
+  output$imagePlot_uebung <- renderPlot({
+    # Render the image and display any drawn polygons
+    img_raster <- as.raster(loaded_image_ueb)
+    par(bg = NA, mar = c(0, 0, 0, 0))  # Transparent background with no margins
+    
+    # Plot the image without borders or axis labels
+    plot(img_raster, xlab = "", ylab = "", bty = "n", asp = img_height / img_width)
+    
+    # Draw existing annotations (polygons) on the image
+    all_polygons <- coords() %>% filter(name == "polygon_uebung")
+    for (poly_id in unique(all_polygons$polygon_id)) {
+      polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
+      if (nrow(polygon_coords) > 2) {
+        polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
+      }
+    }
+  })
+  
+  
+  
+  
   
   # Capture and store clicks for annotation
   observeEvent(input$image_click_6, {
@@ -461,10 +527,38 @@ server <- function(input, output, session) {
     coords(current_coords)
   })
   
+  # Capture and store clicks for annotation
+  observeEvent(input$image_click_uebung, {
+    current_coords <- coords()
+    polygon_id_val <- polygon_id()
+    
+    adjusted_x <- input$image_click_uebung$x
+    adjusted_y <- input$image_click_uebung$y
+    
+    # Add the clicked point to the polygon being drawn
+    current_coords <- add_row(
+      current_coords,
+      x = adjusted_x,
+      y = adjusted_y,
+      polygon_id = polygon_id_val,
+      name = "polygon_uebung"
+    )
+    coords(current_coords)
+  })
+  
+  
   # Clear all annotations for this image
   observeEvent(input$clear_6, {
     coords(coords() %>% filter(name != "polygon_6"))
   })
+  
+  # Clear all annotations for this image
+  observeEvent(input$clear_uebung, {
+    coords(coords() %>% filter(name != "polygon_uebung"))
+  })
+  
+  
+  
   
   # Delete the last drawn polygon for this image
   observeEvent(input$delete_last_polygon_6, {
@@ -475,10 +569,28 @@ server <- function(input, output, session) {
     coords(updated_coords)
   })
   
+  # Delete the last drawn polygon for this image
+  observeEvent(input$delete_last_polygon_uebung, {
+    current_coords <- coords()
+    max_polygon_id <- max(current_coords %>% filter(name == "polygon_uebung") %>% pull(polygon_id), na.rm = TRUE)
+    
+    updated_coords <- current_coords %>% filter(!(name == "polygon_uebung" & polygon_id == max_polygon_id))
+    coords(updated_coords)
+  })
+  
+  
+  
   # Finalize the current polygon and start a new one
   observeEvent(input$end_polygon_6, {
     polygon_id(polygon_id() + 1)
   })
+  
+  # Finalize the current polygon and start a new one
+  observeEvent(input$end_polygon_uebung, {
+    polygon_id(polygon_id() + 1)
+  })
+  
+  
   
   # Observers for the city selection buttons on page 6
   observeEvent(input$class_6_tel_aviv, { selected_city_6("Tel Aviv") })
@@ -492,6 +604,8 @@ server <- function(input, output, session) {
   
   
   
+  
+  ##############################################################################  
   
   
   
@@ -560,7 +674,6 @@ server <- function(input, output, session) {
     })
     
     
-    
     observeEvent(input[[paste0("image_click_", i)]], {
       current_coords <- coords()
       polygon_id_val <- polygon_id()
@@ -579,21 +692,7 @@ server <- function(input, output, session) {
       coords(current_coords)
     })
     
-    
-    observeEvent(input$user_id_input, {
-      user_id(input$user_id_input)
-    })
-    
-    # Store responses to the questions
-    observeEvent(input$q1, {
-      q1_response(input$q1)
-    })
-    
-    observeEvent(input$q2, {
-      q2_response(input$q2)
-    })
-    
-    
+   
     # Render the original-size plot with annotations
     output[[paste0("imagePlot", i)]] <- renderPlot({
       img <- image_read(selected_images[i])
@@ -646,11 +745,37 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  
+  
+  ############################################################################## 
+  
+  
+  observeEvent(input$user_id_input, {
+    user_id(input$user_id_input)
+  })
+  
+  # Store responses to the questions
+  observeEvent(input$q1, {
+    q1_response(input$q1)
+  })
+  
+  observeEvent(input$q2, {
+    q2_response(input$q2)
+  })
+  
+  
+  
+  ############################################################################## 
+  
+  
+  
+  
   # Page navigation handling
   observeEvent(input$next_page, {
     current_page <- page()
     
-    if (current_page == 8) {
+    if (current_page == 9) {
       # Check if city and confidence level are selected
       if (is.null(selected_city_6()) || selected_city_6() == "") {
         showModal(modalDialog(
@@ -736,8 +861,67 @@ server <- function(input, output, session) {
         removeModal()
         page(current_page + 1)   # Move to the next page after processing
       } 
-    } else if (current_page >= 4 && current_page <= 13) {
-      i <- current_page - 3
+    } else if (current_page == 4) {
+        # Proceed with saving if both values are present
+        input_filename <- "uebung_img.png"
+        
+        # Adjust the coordinates for saving as before
+        polygon_coords <- coords() %>% filter(name == "polygon_uebung")
+        
+        annotation_missing <- nrow(polygon_coords) < 3  
+        
+        if (annotation_missing) {
+          showModal(modalDialog(
+            title = "Please annotate the picture!",
+            "Make sure to annotate the picture before proceeding.",
+            easyClose = TRUE
+          ))
+          return()  # Exit if annotations are missing
+        }
+
+        # Load the image and adjust coordinates
+        img <- image_read("www/ueben_img.png")
+        img_height <- image_info(img)$height
+        save_coords <- polygon_coords %>% mutate(y = img_height - y)  # Flip y-coordinates
+        
+        # Save adjusted coordinates to CSV and upload to Nextcloud
+        csv_temp_path <- tempfile(fileext = ".csv")
+        write.csv(save_coords, csv_temp_path, row.names = FALSE)
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(user_id(), "_", input_filename, ".csv"), username, password)
+        
+        # Draw polygons on the image for saving
+        img <- image_draw(img)
+        for (poly_id in unique(save_coords$polygon_id)) {
+          poly_coords <- save_coords %>% filter(polygon_id == poly_id)
+          polygon(poly_coords$x, poly_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
+        }
+        dev.off()  # Close the drawing device
+        
+        # Save the annotations and data
+        # Progressively update the progress bar and save
+        showModal(modalDialog(
+          title = "Saving, this might take a moment...",
+          progressBar(id = "save_progress", value = 0, display_pct = TRUE),
+          footer = NULL,
+          easyClose = FALSE
+        ))
+        
+        # Progressively update the progress bar during saving
+        for (progress in seq(0, 100, by = 20)) {
+          Sys.sleep(0.2)
+          updateProgressBar(session, id = "save_progress", value = progress)
+        }
+        
+        # Save the annotated image temporarily and upload to Nextcloud
+        img_temp_path <- tempfile(fileext = ".png")
+        image_write(img, path = img_temp_path, format = "png")
+        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(user_id(), "_", input_filename, ".png"), username, password)
+        
+        removeModal()
+        page(current_page + 1)   # Move to the next page after processing
+  
+    } else if (current_page >= 5 && current_page <= 14) {
+      i <- current_page - 4
       selected_class <- selected_city()[i]  # Get selected city for current image
       confidence_level <- selected_confidence()[i]  # Get selected confidence for current image
       
@@ -829,7 +1013,7 @@ server <- function(input, output, session) {
           user_id(input$user_id_input)
           page(2)  # Move to the second page
         }
-    } else if (current_page == 14) {  # Last page to save the questionnaire responses
+    } else if (current_page == 15) {  # Last page to save the questionnaire responses
       # Ensure that User ID and responses are present
       if (user_id() == "" || q1_response() == "" || q2_response() == "") {
         showModal(modalDialog(
@@ -863,7 +1047,6 @@ server <- function(input, output, session) {
     } else {
       page(current_page + 1)  # Move to the next page for non-image pages
     }
-    
   })
   
 
