@@ -50,19 +50,19 @@ server <- function(input, output, session) {
   
   # Load images from directory
   img_dir <- "1_study_input/"
-  all_images <- list.files(img_dir, pattern = "\\.png$", full.names = TRUE)
+  all_images <- list.files(img_dir, pattern = "\\.jpg$", full.names = TRUE)
   selected_images <- sample(all_images, 10)  # Randomly select 10 images
   
   # Function to extract class name from the filename
   extract_class_from_filename <- function(filename) {
     parts <- strsplit(basename(filename), "_")[[1]]
     class_name <- parts[length(parts)]
-    class_name <- gsub("\\.png", "", class_name)
+    class_name <- gsub("\\.jpg", "", class_name)
     return(class_name)
   }
   
   # Reactive values for page navigation, coordinates, and polygon IDs
-  page <- reactiveVal(16)
+  page <- reactiveVal(5)
   coords <- reactiveVal(value = tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
   polygon_id <- reactiveVal(1)
   
