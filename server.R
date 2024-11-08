@@ -62,143 +62,164 @@ server <- function(input, output, session) {
   }
   
   # Reactive values for page navigation, coordinates, and polygon IDs
-  page <- reactiveVal(4)
+  page <- reactiveVal(16)
   coords <- reactiveVal(value = tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
   polygon_id <- reactiveVal(1)
   
   # Reactive value to store selected city for each image
   selected_city <- reactiveVal(rep("", 10))  # Initialize for 10 images
   
+  
+  
+  # Track which div step is currently active
+  step <- reactiveVal(1)
+
+
   # UI rendering for each page
   output$page_content <- renderUI({
     current_page <- page()
     if (current_page == 1) {  # Initial instructions page
       tagList(
         div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h2("Welcome to this Annotation Study!", style = "color: #003366; font-weight: bold; text-align: center;"),
+            h2("Welcome to this study!", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             # Paragraph with increased margin-bottom to add space
-            p("In this study, we aim to explore how artificial intelligence (AI) and humans can collaborate effectively.",
-              style = "text-align: center; margin-top: 50px; margin-bottom: 50px;"),
+            p("We aim to explore effective collaboration between ", strong("ARTIFICIAL INTELLIGENCE"), "and " , strong("HUMANS"),
+              style = "text-align: center; margin-bottom: 40px;"),
             
             # User ID input
             div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
-                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center; margin-bottom: 20px; margin-top: 20px;", "Please enter your User ID:"),
+                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center;", "Please enter your User ID:"),
                           placeholder = "User ID", width = '100%'),
-                div(style = "font-size: 12px; color: #666; text-align: center; margin-top: 20px;",
+                div(style = "font-size: 12px; color: #666; text-align: center;",
                     "The User ID is required to track your work.")
             ),
             
             # Continue button
-            div(style = "display: flex; justify-content: center; margin-top: 30px;",
-                actionButton("next_page", "Continue to Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+            div(style = "display: flex; justify-content: center; margin-top: 20px;",
+                actionButton("next_page", "Continue to Introduction", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
       )
     } else if (current_page == 2) {  # Second introduction page
       tagList(
-        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h2("Instructions", style = "color: #003366; font-weight: bold; text-align: center;"),
+        div(id = "intro1", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            h2("Introduction", style = "color: #003366; font-weight: bold; text-align: center;"),
             
-            # New instructions text with structured layout
-            h4("Your Task:", style = "margin-top: 50px; text-align: center; color: #003366;"),
+            p("You will be shown  ", strong("Google Maps images") , " each depicting a random location from one of four cities: ", 
+                  style = "text-align: center; margin-top: 20px;"),
+            p(HTML("<span style='color: #003366; font-weight: bold;'>Berlin, Hamburg, Jerusalem, or Tel Aviv</span>."),
+              style = "text-align: center;"),
+            p("For each image, the AI model has predicted ", strong("the location"), " and highlighted ", strong("key areas"), " that influenced its decision.", 
+              style = "text-align: center;"),
             
-            p(HTML("You will be shown <span style='color: #003366; font-weight: bold;'>10 images</span> of random locations from one of four cities: <span style='color: #003366; font-weight: bold;'>Berlin, Hamburg, Jerusalem, and Tel Aviv</span>. Each image is a Google Maps photo from one of these cities."),
-              style = "text-align: center; margin-bottom: 50px;"),
+           div(
+              strong("Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
+              style = "color: red;"
+            ),
             
-            tags$ol(style = "list-style-type: none; padding-left: 0;",  # Removes bullets and indentation
-                    tags$li(
-                      div(style = "text-align: left; margin-bottom: 20px;",
-                          strong("City Classification:"),
-                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
-                                  tags$li("For each image, the tool will also display the AI’s prediction."),
-                                  tags$li("Review the image carefully, then select the city", strong("you"), "believe it represents.")
-                          )
-                      )
+            actionButton("next_page_step_1", "Continue", class = "btn-primary", style = "margin-top: 20px;")
+            
+        ), 
+        
+        div(id = "intro2", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+           
+            p(HTML("You will have <span style='font-weight: bold;'>3 tasks</span> for each image:"), 
+              style = "text-align: left;"),
+          
+            tags$ol(style = "list-style-type: decimal; padding-left: 2;",  # Adds numbers and removes indentation
+                    div(style = "text-align: left;",
+                        tags$li(p(strong("Choose a City: "), "Review the image and select the city you think it represents."))
                     ),
-                    tags$li(
-                      div(style = "text-align: left; margin-bottom: 20px;",
-                          strong("Marking Important Areas:"),
-                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
-                                  tags$li("Each image displays the regions that were most important for the AI's decision, highlighted for your reference."),
-                                  tags$li("Using the annotation tool, highlight specific areas in the image that influenced", strong("your"), "decision.")
-                          )
-                      )
+                    div(style = "text-align: left;",
+                        tags$li(p(strong("Annotate: "), "Use the tool to highlight areas in the image that influenced your choice."))
                     ),
-                    tags$li(
-                      div(style = "text-align: left; margin-bottom: 20px;",
-                          strong("Selecting Confidence Level:"),
-                          tags$ul(style = "list-style-type: disc; padding-left: 20px;",  # Inner bullets for details
-                                  tags$li("Choose a confidence level for each decision to indicate how certain you are of your choice."),
-                                  tags$li("Five levels are available, ranging from 'Very Unsure' to 'Very Sure.'")
-                          )
-                      )
+                    div(style = "text-align: left;",
+                        tags$li(p(strong("Confidence Level: "), "Select how confident you are in your choice, from 'Very Unsure' to 'Very Sure'."))
                     )
             ),
+          
+            actionButton("next_page_step_2", "Continue", class = "btn-primary", style = "margin-top: 20px;")
             
-            div(
-              strong("Keep in mind that AI models can make mistakes, so the AI's choice may not always be correct."),
-              style = "margin-top: 50px; color: red;"
-            ),
+        ),
+              
+        div(id = "intro3", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             
-            h4("Bonus Opportunity:", style = "text-align: center; color: #003366; margin-top: 50px;"),
+            h4("Bonus Opportunity", style = "text-align: center; color: #003366;"),
             
             p("You can earn an additional payment by providing precise markings and achieving at least 90% correct classifications. This bonus will be an extra x cents.",
               style = "text-align: center; margin-top: 10px;"),
             
-            p("Thank you for your participation!", style = "text-align: center; margin-top: 50px; font-weight: bold; color: #003366;"),
-            
             # Continue button
-            div(style = "text-align: center; margin-top: 30px;",
+            div(style = "text-align: center; margin-top: 20px;",
                 actionButton("next_page", "Continue to Annotation Instructions", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
       )
-      
     } else if (current_page == 3) {  # Third introduction page for polygon instructions
       tagList(
-        div(style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(id = "intro1_2", style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             
             # Page Title
-            h2("Instructions for Marking Important Areas", style = "margin-top: 20px; color: #003366; font-weight: bold; text-align: center;"),
+            h2("Annotation Instructions", style = "margin-top: 20px; color: #003366; font-weight: bold; text-align: center;"),
             
-            # Explanation for creating polygons
-           
-            tags$ol(
-              div(style = "text-align: left; margin-top: 50px;",
-                  strong("Forming a Polygon:"),
-                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
-                          tags$li("Begin by clicking on the image. Each click adds a point that will help define the boundaries of the area you find significant."),
-                          tags$li("For best results, start placing points around the outer edges of the area to create an outline that encompasses the entire region."),
-                          tags$li("Continue clicking along the perimeter of the area, placing points close enough to capture the shape accurately."),
-                          tags$li("Once you've added several points, the tool will connect them to form a polygon, which serves as a visual boundary around the area you want to highlight.")
-                  )
-              ),
-              
-              div(style = "text-align: left; margin-top: 20px;",  # Adds space between sections
-                  strong("Delete Annotations:"),
-                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
-                          tags$li("You can modify your annotations by either clearing all points or deleting the last polygon drawn if it doesn’t look right.")
-                  )
-              ),
-              
-              div(style = "text-align: left; margin-top: 20px;",  # Adds space between sections
-                  strong("Completing the Annotation:"),
-                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
-                          tags$li("After outlining an area, you can end the current polygon and start a new one if you need to highlight multiple regions within the same image."),
-                          tags$li("When you’re satisfied with the outline, complete the polygon to finalize the area.")
-                  )
-              )
+            p("The following explains how to use the annotation tool."),
+
+            actionButton("next_page_step_3", "Continue", class = "btn-primary", style = "margin-top: 20px;")
+            
+        ), 
+        
+        div(id = "intro2_2", style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            
+            # Display specific images (1.jpg, 2.jpg) from the www/examples folder
+            div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 10px;",
+                # Load and display each specific image
+                lapply(c("11.png"), function(img_name) {
+                  img_path <- file.path("examples", img_name)  # Use only the relative path from www
+                  tags$img(src = img_path, style = "max-width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);")
+                })
             ),
             
-          
-            p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
-              style = "text-align: center; margin-bottom: 50px;  margin-top: 50px; color: red;  font-weight: bold;"),
             
-            p("Here you can see a very good example on the left while the right is a very bad example"),
+            # Explanation for creating polygons
+            tags$ol(
+              div(style = "text-align: left; color: blue;",
+                  strong("Forming a Polygon:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("Click on the image to add points."),
+                          tags$li("Points will connect to form a polygon around the area."),
+                          tags$li("Place points along the outer edges to capture the shape accurately."),
+                  )
+              ),
               
+              div(style = "text-align: left; color: green;",  # Adds space between sections
+                  strong("Delete Annotations:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("Clear all points or delete the last polygon if needed.")
+                  )
+              ),
+              
+              div(style = "text-align: left; color: #E83E8C;",  # Adds space between sections
+                  strong("Completing the Annotation:"),
+                  tags$ul(style = "list-style-type: disc; color: black;",  # Set bullet points to black
+                          tags$li("Finish the polygon to finalize the area, or start a new one to highlight more independet regions.")
+                  )
+              ), 
+             
+              actionButton("next_page_step_4", "Continue", class = "btn-primary", style = "margin-top: 20px;")
+              
+            )
+        ), 
+            
+        div(id = "intro3_2", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            
+            p("Please ensure to carefully place points around the boundary, capturing as many corners as necessary to create an as accurately as possible outline.",
+              style = "text-align: center; font-weight: bold;"),
+            
+            p("Follow the instructions carefully, as there will be ", strong(style = "color: #FF0000;", "attention checks"), ". Here you can see a very good example on the left while the right is a very bad example."),
+            
             # Display specific images (1.jpg, 2.jpg) from the www/examples folder
             div(style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 40px;",
                 # Load and display each specific image
@@ -209,41 +230,66 @@ server <- function(input, output, session) {
             ),
             
             # Continue button
-            div(style = "text-align: center; margin-top: 30px;",
-                actionButton("next_page", "Start", icon = icon("arrow-right"), class = "btn-primary btn-lg",
+            div(style = "text-align: center; margin-top: 20px;",
+                actionButton("next_page", "Annotation Practice", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
         )
       )
     } else if (current_page == 4){
-      # Load and display the specific image for annotation
       tagList(
-        div(style = "margin-top: 20px;background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
-            div(style = "width: 100%; text-align: left; margin-bottom: 10px;",
-                p("Please practice to annotate all the figures. First draw polygones around each of the shapes. Next delete the polygone around the yellow one again to proceed")
-            ),
+        div(id = "intro1_3", style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             
-            div(style = "margin-bottom: 20px; width: 100%; text-align: left; margin-bottom: 10px;",
-                p("Please practice to annotate all the figures. First draw polygones around each of the shapes. Next delete the polygone around the yellow one again to proceed")
-            ),
+            # Page Title
+            h2("Annotation Practice", style = "margin-top: 20px; color: #003366; font-weight: bold; text-align: center;"),
             
-            # Display the image for annotation
-            div(style = paste("display: flex; justify-content: center; align-items: center; width:", img_width_ueb, "px; height:", img_height_ueb, "px; padding: 0; margin: 0;"),
-                plotOutput("imagePlot_uebung", click = "image_click_uebung", 
-                           width = paste0(img_width_ueb, "px"), height = paste0(img_height_ueb, "px"))
-            ),
-            div(style = "display: flex; gap: 10px; margin-top: 5px; justify-content: center;",  
-                actionButton("clear_uebung", "Clear All Annotations", icon = icon("trash"), 
-                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
-                actionButton("delete_last_polygon_uebung", "Delete Last Polygon", icon = icon("trash"), 
-                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
-                actionButton("end_polygon_uebung", "Complete Polygon", icon = icon("check"), 
-                             class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
-                actionButton("next_page", "Next", icon = icon("arrow-right"), 
-                             class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
-            )
-        )
+            div( 
+              p("In the next step, please practice using the annotation tool. "),
+              strong(style = "color: #FF0000;", "The result will be saved and used as an attention check."),
+            ), 
+            
+            actionButton("next_page_step_5", "Continue", class = "btn-primary", style = "margin-top: 20px;")
+            
+        ), 
+        
+        div(id = "intro2_3", style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            
+            # Explanation for creating polygons
+            tags$ol(
+              div(style = "text-align: left; margin-bottom: 20px",
+                  strong("Practice Annotation:"),
+              ),
+                  
+              div(style = "text-align: left; margin-bottom: 20px",
+                tags$ul(style = "list-style-type: decimal; color: black;",  # Set bullet points to black
+                          tags$li("Draw a polygon around each green shape."),
+                          tags$li("Draw a polygon around the yellow shape."),
+                          tags$li("Delete the last polygon around the yellow shape.")
+                )
+              ),
+              
+              
+              
+              # Display the image for annotation
+              div(style = paste("display: flex; justify-content: center; align-items: center; width:", img_width_ueb, "px; height:", img_height_ueb, "px; padding: 0; margin: 0;"),
+                  plotOutput("imagePlot_uebung", click = "image_click_uebung", 
+                             width = paste0(img_width_ueb, "px"), height = paste0(img_height_ueb, "px"))
+              ),
+              
+              div(style = "display: flex; gap: 10px; margin-top: 5px; justify-content: center;",  
+                  actionButton("clear_uebung", "Clear All Annotations", icon = icon("trash"), 
+                               class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                  actionButton("delete_last_polygon_uebung", "Delete Last Polygon", icon = icon("trash"), 
+                               class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                  actionButton("end_polygon_uebung", "Complete Polygon", icon = icon("check"), 
+                               class = "btn-secondary", style = "padding: 5px 7px; font-size: 12px;"),  
+                  actionButton("next_page", "Start Study", icon = icon("arrow-right"), 
+                               class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
+              ),
+          )
+        ),
       )
+       
     } else if (current_page == 9) {  # Page 6 content with updated text for annotation
         # Load and display the specific image for annotation
         image_path <- "www/img_test_Berlin.png"
@@ -419,16 +465,14 @@ server <- function(input, output, session) {
             
             # Question 1
             div(style = "margin-bottom: 20px;",
-                h4("Question 1"),
-                p("Have you ever visited Berlin, Hamburg, Tel Aviv, or Jerusalem?"),
-                radioButtons("q1", label = NULL, choices = c("Yes", "No"), selected = character(0), inline = TRUE)
+                p("Have you ever ", strong("lived"), " in Berlin, Hamburg, Tel Aviv, or Jerusalem?"),
+                checkboxGroupInput("q1", label = NULL, choices = c("Berlin", "Hamburg", "Tel Aviv", "Jerusalem"), selected = character(0), inline = TRUE)
             ),
             
             # Question 2
             div(style = "margin-bottom: 20px;",
-                h4("Question 2"),
-                p("How would you rate this study if 1 is the worst and 5 is the best?"),
-                radioButtons("q2", label = NULL, choices = c("1", "2", "3", "4", "5"), selected = character(0), inline = TRUE)
+                p("Have you ever ", strong("visited"), " Berlin, Hamburg, Tel Aviv, or Jerusalem?"),
+                checkboxGroupInput("q1", label = NULL, choices = c("Berlin", "Hamburg", "Tel Aviv", "Jerusalem"), selected = character(0), inline = TRUE)
             ),
             
             # Next button
@@ -769,7 +813,37 @@ server <- function(input, output, session) {
   ############################################################################## 
   
   
+  observeEvent(input$next_page_step_1, {
+    current_step <- step()
+    step(current_step + 1) # Increase the step by 1 each time
+    session$sendCustomMessage("showNextDiv", step())
+  })
   
+  observeEvent(input$next_page_step_2, {
+    current_step <- step()
+    step(current_step + 1) # Increase the step by 1 each time
+    session$sendCustomMessage("showNextDiv", step())
+  })
+  
+  observeEvent(input$next_page_step_3, {
+    current_step <- step()
+    step(current_step + 1) # Increase the step by 1 each time
+    session$sendCustomMessage("showNextDiv", step())
+  })
+  
+  observeEvent(input$next_page_step_4, {
+    current_step <- step()
+    step(current_step + 1) # Increase the step by 1 each time
+    session$sendCustomMessage("showNextDiv", step())
+  })
+  
+  observeEvent(input$next_page_step_5, {
+    current_step <- step()
+    step(current_step + 1) # Increase the step by 1 each time
+    session$sendCustomMessage("showNextDiv", step())
+  })
+  
+ 
   
   # Page navigation handling
   observeEvent(input$next_page, {
