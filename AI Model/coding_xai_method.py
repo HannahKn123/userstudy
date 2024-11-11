@@ -1,51 +1,18 @@
 #Importiere alle notwendigen Pakete
-import time
-import json
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import skdim
-import random
 import numpy as np
-import math
 import pandas as pd
-import keras
 import cv2
-import skdim
 import tensorflow as tf
-import seaborn as sns
-
+import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
-from collections import Counter
-from PIL import Image
-#from google.colab.patches import cv2_imshow
+from tensorflow import keras
 from tensorflow.keras.applications import MobileNetV2
-from matplotlib import pyplot as plt
-from skopt import gp_minimize
-from imblearn.over_sampling import RandomOverSampler
-from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.neighbors import NearestNeighbors
-from itertools import combinations
-from tqdm.notebook import tqdm
-from scipy import stats
-from sklearn.linear_model import Lasso, lars_path, Ridge, ElasticNet, LogisticRegression, SGDClassifier
-from collections import Counter
-from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import *
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_breast_cancer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from scipy.stats import wasserstein_distance
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-from scipy.stats import mannwhitneyu
-from scipy.stats import f_oneway
-from scipy.stats import ttest_ind
-from scipy.stats import wilcoxon
-
+# Funktion zum Laden und Vorverarbeiten von Bilddaten
 def import_data(folder_path, train):
-  """
+    """
     Importiere Bilder und Labels aus den spezifischen Ordnern und formatiere die Daten für das Modell.
 
     Argumente:
@@ -57,62 +24,63 @@ def import_data(folder_path, train):
     - int_ground_truth_labels: Integer-Labels der Bilder
     - cat_ground_truth_labels: Kategorisierte Labels
     - str_ground_truth_labels: Original-Labels als Strings
-  """
+    - image_names: Liste der Original-Bildnamen
+    """
+    # Festlegen des spezifischen Pfades basierend auf dem Datentyp
+    if train == 1:
+        folder_path = os.path.join(folder_path, "train")
+        print('Importing Training data...')
+    elif train == 0:
+        print('Importing Test data...')
+        folder_path = os.path.join(folder_path, "test")
 
-  # Festlegen des spezifischen Pfades basierend auf dem Datentyp
-  if train==1:
-    folder_path = os.path.join(folder_path, "test_data_train")
-    print('Importing Training data...')
-  elif train == 2:
-    print('Importing Explanation data...')
-    folder_path = os.path.join(folder_path, "Pool25")
-  elif train == 0:
-    print('Importing Test data...')
-    folder_path = os.path.join(folder_path, "test_data_test")
+    # Liste aller Klassenordner innerhalb des Pfads erstellen
+    class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]
 
-  class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]
+    # Initialisieren der Listen für Bilder, Labels und Bildnamen
+    images = []
+    ground_truth_labels = []
+    image_names = []  # Neue Liste zum Speichern der Bildnamen
 
-  # Initialisieren der Listen für Bilder und Labels
-  images = []
-  ground_truth_labels = []
-
- # Iteriere über Klassenordner und importiere Bilder
-  for class_folder in class_folders:
+    # Iteriere über Klassenordner und importiere Bilder
+    for class_folder in class_folders:
         class_folder_path = os.path.join(folder_path, class_folder)
         image_files = [f for f in os.listdir(class_folder_path) if f.endswith('.jpg') or f.endswith('.png')]
 
         for image_file in image_files:
             image_path = os.path.join(class_folder_path, image_file)
             img = cv2.imread(image_path)
-            #resized_img = cv2.resize(img, target_size)
             images.append(img)
             ground_truth_labels.append(class_folder)
+            image_names.append(image_file)  # Speichern des Bildnamens
 
-  # Konvertiere die Bildliste in ein Numpy-Array
-  images_array = np.array(images)
-  print('Imported', images_array.shape[0], 'images of shape', images_array.shape[1:4])
+    # Konvertiere die Bildliste in ein Numpy-Array
+    images_array = np.array(images)
+    print('Imported', images_array.shape[0], 'images of shape', images_array.shape[1:4])
 
-  str_ground_truth_labels = np.array(ground_truth_labels)
+    str_ground_truth_labels = np.array(ground_truth_labels)
 
-  # Label-Zuordnung und Zählung
-  label_mapping = {"Tel Aviv": "TelAviv",
-          "Jerusalem": "Jerusalem",
-          "Hamburg": "Hamburg",
-          "Berlin": "Berlin"}
+    # Label-Zuordnung und Zählung
+    label_mapping = {"Tel Aviv": "TelAviv",
+                     "Jerusalem": "Jerusalem",
+                     "Hamburg": "Hamburg",
+                     "Berlin": "Berlin"}
 
-  # Label-Zuordnung und Zählung
-  str_ground_truth_labels = np.array([label_mapping[label] for label in str_ground_truth_labels])
-  print('Remapped to the following classes: ', np.unique(str_ground_truth_labels, return_counts=True)[0])
-  print('Found', np.unique(str_ground_truth_labels, return_counts=True)[1], 'examples for the different classes respectively')
+    # Label-Zuordnung und Zählung
+    str_ground_truth_labels = np.array([label_mapping[label] for label in str_ground_truth_labels])
+    print('Remapped to the following classes: ', np.unique(str_ground_truth_labels, return_counts=True)[0])
+    print('Found', np.unique(str_ground_truth_labels, return_counts=True)[1], 'examples for the different classes respectively')
 
-  # Umwandeln der Labels von Strings zu Integern
-  int_ground_truth_labels = strLabel_to_intLabel_mapping(str_ground_truth_labels)
+    # Umwandeln der Labels von Strings zu Integern
+    int_ground_truth_labels = strLabel_to_intLabel_mapping(str_ground_truth_labels)
 
-  # Kategorisieren der Labels
-  cat_ground_truth_labels = to_categorical(int_ground_truth_labels, 4)
+    # Kategorisieren der Labels
+    cat_ground_truth_labels = to_categorical(int_ground_truth_labels, 4)
 
-  return images_array, int_ground_truth_labels, cat_ground_truth_labels, str_ground_truth_labels
+    return images_array, int_ground_truth_labels, cat_ground_truth_labels, str_ground_truth_labels, image_names  # Rückgabe der Bildnamen
 
+
+# Funktion zur Umwandlung von String-Labels zu Integer-Labels
 def strLabel_to_intLabel_mapping(y):
   """
   input:
@@ -126,27 +94,24 @@ def strLabel_to_intLabel_mapping(y):
   int_labels_mapped = np.array([label_mapping[val] for val in y])
   return int_labels_mapped
 
+
+# Datenpfad und Laden der Trainings-, Test- und Erklärungsdaten
 data_dir='Data'
-X_train, y_int_train, y_cat_train, y_str_train= import_data(data_dir, train = 1)
+X_train, y_int_train, y_cat_train, y_str_train, image_names_train = import_data(data_dir, train=1)
+X_test, y_int_test, y_cat_test, y_str_test, image_names_test = import_data(data_dir, train=0)
 
-plt.imshow(cv2.cvtColor(X_train[0], cv2.COLOR_BGR2RGB))
-
-X_test, y_int_test, y_cat_test, y_str_test = import_data(data_dir, train = 0)
-
-plt.imshow(cv2.cvtColor(X_test[0], cv2.COLOR_BGR2RGB))
-
-X_expl, y_int_expl, y_cat_expl, y_str_expl = import_data(data_dir, train = 2)
-
-
+# Aufbau des Modells
 IMG_SIZE = (448, 448)
 IMG_SHAPE = IMG_SIZE + (3,)
 base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE, include_top=False, weights='imagenet')
 
+# Freezing der Basismodell-Gewichte
 base_model.trainable = False
 global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
 prediction_layer = tf.keras.layers.Dense(4, activation='softmax')
 preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 
+# Modell mit MobileNetV2 als Basismodell und benutzerdefiniertem Klassifikationskopf
 inputs = tf.keras.Input(shape=(448, 448, 3))
 x = preprocess_input(inputs)
 x = base_model(x, training=False)
@@ -160,21 +125,10 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rat
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
+# Laden der gespeicherten Modellgewichte
 model_dir='Models'
 model.load_weights(filepath = os.path.join(model_dir, 'best_model.keras'))
 
-pred_test = np.argmax(model.predict(X_test), axis = 1)
-#%%
-accuracy = accuracy_score(y_int_test, pred_test)
-print(f"Accuracy: {accuracy:.4f}")
-
-class_report = classification_report(y_int_test, pred_test)
-print("Classification Report:")
-print(class_report)
-
-conf_matrix = confusion_matrix(y_int_test, pred_test)
-print("Confusion Matrix:")
-print(conf_matrix)
 
 IMG_SIZE = (448, 448)
 IMG_SHAPE = IMG_SIZE + (3,)
@@ -189,10 +143,9 @@ inputs = tf.keras.Input(shape=(448, 448, 3))
 x = preprocess_input(inputs)
 x = base_model(x, training=False)
 
+#Ímplementierung des Grad Models
 grad_model = tf.keras.Model(inputs, x)
-
 grad_model.summary()
-
 grad_model.load_weights(filepath = os.path.join(model_dir, 'best_model.keras'))
 
 
@@ -278,11 +231,11 @@ def save_transparent_highlight(img, important_pixels, output_path):
     # Erstellen einer Kopie des Originalbildes für die Markierung
     highlighted_img = img.copy()
 
-    # Markiere alle wichtigen Pixel (Wichtigkeit > 0.5) in transparentem Rot
+    # Markiere alle wichtigen Pixel (Wichtigkeit > 0.5) in transparentem Lila
     for x, y, importance in important_pixels:
         if importance > 0.5:
-            # Markierung in leicht transparentem Rot (R=255, G=0, B=0, Transparenz=0.4)
-            highlighted_img[y, x] = (0.6 * img[y, x] + 0.4 * np.array([255, 0, 0])).astype(np.uint8)
+            # Markierung in leicht transparentem Lila (R=128, G=0, B=128, Transparenz=0.4)
+            highlighted_img[y, x] = (0.6 * img[y, x] + 0.4 * np.array([128, 0, 128])).astype(np.uint8)
 
     # Speichern des markierten Bildes
     plt.imsave(output_path, cv2.cvtColor(highlighted_img, cv2.COLOR_BGR2RGB))
@@ -292,32 +245,35 @@ def save_transparent_highlight(img, important_pixels, output_path):
 # Mapping der Label-Indexe zu Klassennamen
 label_mapping = {0: "Berlin", 1: "Hamburg", 2: "TelAviv", 3: "Jerusalem"}
 
-# Hauptschleife für jedes Bild in X_expl
-for i, img in enumerate(X_expl):
+# Hauptschleife für jedes Bild in X_test
+for i, img in enumerate(X_test):
     img_array = np.expand_dims(img, axis=0)
     heatmap, important_pixels = gradCAMplusplus(img_array, model, grad_model, classifier_layer_names, threshold=0.5)
 
     # Tatsächliche Klasse und Vorhersageklasse bestimmen
-    true_class = label_mapping[y_int_expl[i]]
+    true_class = label_mapping[y_int_test[i]]
     pred_class_index = np.argmax(model.predict(img_array), axis=1)[0]
     pred_class = label_mapping[pred_class_index]
 
-    # Erstellen des Bildordners mit tatsächlicher und vorhergesagter Klasse
-    image_folder = os.path.join("ImportantPixels", f"image_{i}_{true_class}_{pred_class}")
-    os.makedirs(image_folder, exist_ok=True)
+    # Verwenden des Originalnamens des Bildes ohne Dateiendung
+    original_name = os.path.splitext(image_names_test[i])[0]  # Entfernt die Dateiendung (z. B. .png oder .jpg)
 
-    # Speichern der wichtigen Pixel als Excel in den Bildordner
-    excel_path = os.path.join(image_folder, "important_pixels.xlsx")
+    # Sicherstellen, dass das Verzeichnis "ImportantPixels_Image" existiert
+    os.makedirs("ImportantPixels_Image", exist_ok=True)
+    os.makedirs("GradCAM", exist_ok=True)
+    os.makedirs("ImportantPixels", exist_ok=True)
+
+    # Pfad und Name für die Excel-Datei im Ordner "ImportantPixels"
+    excel_filename = f"{original_name}_{true_class}_{pred_class}.xlsx"
+    excel_path = os.path.join("ImportantPixels", excel_filename)
     save_important_pixels_to_excel(important_pixels, excel_path)
 
-    # Speichern der überlagerten Heatmap in den Bildordner
-    heatmap_path = os.path.join(image_folder, "heatmap_overlay.png")
-    save_heatmap_overlay(img, heatmap, heatmap_path)
+    # Pfad und Name für das GradCAM-Bild im Ordner "GradCAM"
+    gradcam_filename = f"{original_name}_GradCAM.png"
+    gradcam_path = os.path.join("GradCAM", gradcam_filename)
+    save_heatmap_overlay(img, heatmap, gradcam_path)
 
-    # Speichern des transparent hervorgehobenen Bildes
-    highlighted_image_path = os.path.join(image_folder, "highlighted_important_pixels.png")
+    # Pfad und Name für das Bild mit den markierten wichtigen Pixeln im Ordner "ImportantPixels_Image"
+    highlighted_image_filename = f"{original_name}_{true_class}_{pred_class}.png"
+    highlighted_image_path = os.path.join("ImportantPixels_Image", highlighted_image_filename)
     save_transparent_highlight(img, important_pixels, highlighted_image_path)
-
-
-
-
