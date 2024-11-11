@@ -114,9 +114,7 @@ ui <- fluidPage(
     ")),
     
     tags$style(HTML("
-      #intro2, #intro3 { display: none; } /* Hide intro2 and intro3 initially */
-      #intro2_2, #intro3_2 { display: none; } /* Hide intro2 and intro3 initially */
-      #intro2_3 { display: none; } /* Hide intro2 and intro3 initially */
+      #intro2, #intro3, #intro2_2 { display: none; } /* Hide intro2 and intro3 initially */
     ")),
     
     tags$script(HTML("
@@ -129,16 +127,12 @@ ui <- fluidPage(
         // Listen for 'showNextDiv' custom message events in Shiny
         Shiny.addCustomMessageHandler('showNextDiv', function(step) {
           if (step === 2) {
-            $('#intro2').fadeIn(1000); // Show the second div without hiding the first
+            $('#intro2').fadeIn(500); // Show the second div without hiding the first
           } else if (step === 3) {
-            $('#intro3').fadeIn(1000); // Show the third div without hiding the previous ones
+            $('#intro3').fadeIn(500); // Show the third div without hiding the previous ones
           } else if (step === 4) {
-            $('#intro2_2').fadeIn(1000); // Show the second div without hiding the first on the third page
-          } else if (step === 5) {
-            $('#intro3_2').fadeIn(1000); // Show the third div without hiding the previous ones on the third page
-          } else if (step === 6) {
-            $('#intro2_3').fadeIn(1000); // Show the third div without hiding the previous ones on the third page
-          }
+            $('#intro2_2').fadeIn(500); // Show the second div without hiding the first on the third page
+          } 
         });
       });
     ")),
@@ -187,12 +181,8 @@ ui <- fluidPage(
     tabPanel("4", uiOutput("page_content"), value = "tab_8"),
     tabPanel("5", uiOutput("page_content"), value = "tab_9"),
     tabPanel("6", uiOutput("page_content"), value = "tab_10"),
-    tabPanel("7", uiOutput("page_content"), value = "tab_11"),
-    tabPanel("8", uiOutput("page_content"), value = "tab_12"),
-    tabPanel("9", uiOutput("page_content"), value = "tab_13"),
-    tabPanel("10", uiOutput("page_content"), value = "tab_14"),
-    tabPanel("Survey", uiOutput("page_content"), value = "tab_15"),
-    tabPanel("Done!", uiOutput("page_content"), value = "tab_16")
+    tabPanel("Survey", uiOutput("page_content"), value = "tab_11"),
+    tabPanel("Done!", uiOutput("page_content"), value = "tab_12")
   ),
   
   div(class = "image-container",
