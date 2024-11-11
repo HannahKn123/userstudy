@@ -48,14 +48,11 @@ def import_data(folder_path, train):
 
   # Festlegen des spezifischen Pfades basierend auf dem Datentyp
   if train==1:
-    folder_path = os.path.join(folder_path, "test_data_train")
+    folder_path = os.path.join(folder_path, "train")
     print('Importing Training data...')
-  elif train == 2:
-    print('Importing Explanation data...')
-    folder_path = os.path.join(folder_path, "Pool25")
   elif train == 0:
     print('Importing Test data...')
-    folder_path = os.path.join(folder_path, "test_data_test")
+    folder_path = os.path.join(folder_path, "test")
 
   class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]
 
@@ -122,21 +119,7 @@ def strLabel_to_intLabel_mapping(y):
 # Imp#Trainings-, Test- und Erklärungssätze
 data_dir='Data'
 X_train, y_int_train, y_cat_train, y_str_train = import_data(data_dir, train=1)
-
 X_test, y_int_test, y_cat_test, y_str_test = import_data(data_dir, train = 0)
-
-X_expl, y_int_expl, y_cat_expl, y_str_expl = import_data(data_dir, train = 2)
-
-# ============================ Visualisierung der Daten ============================
-# Zufällige Bilder aus dem Erklärungsdatensatz anzeigen
-import random
-plt.figure(figsize=(10, 10))
-for i in range(9):
-    ax = plt.subplot(3, 3, i + 1)
-    i = random.randint(0,23)
-    plt.imshow(cv2.cvtColor(X_expl[i], cv2.COLOR_BGR2RGB))
-    plt.title([y_str_expl[i], y_int_expl[i]])
-    plt.axis("off")
 
 # ============================ Trainings- und Validierungsdatensatzaufteilung ============================
 # Aufteilen des Trainingssatzes in Trainings- und Validierungsdaten
@@ -181,10 +164,6 @@ x = tf.keras.layers.Dropout(0.2)(x)
 outputs = prediction_layer(x)
 model = tf.keras.Model(inputs, outputs)
 
-# Modellübersicht
-model.summary()
-
-
 # Kompilieren des Modells
 base_learning_rate = 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
@@ -194,18 +173,21 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rat
 
 # ============================ Evaluierung auf Testdaten ============================
 # Evaluieren des Modells und Erzeugen von Berichten
+output_dir = "Auswertung_AI"
 pred0 = model.predict(X_test)
 accuracy = accuracy_score(y_int_test, np.argmax(pred0, axis =1))
-print(f"Accuracy: {accuracy:.4f}")
+accuracy_text = f"Accuracy: {accuracy:.4f}\n"
+with open(os.path.join(output_dir, "accuracy.txt"), "w") as f:
+    f.write(accuracy_text)
 
 # Klassifikationsbericht und Konfusionsmatrix generieren
 class_report = classification_report(y_int_test, np.argmax(pred0, axis =1))
-print("Classification Report:")
-print(class_report)
+with open(os.path.join(output_dir, "classification_report.txt"), "w") as f:
+    f.write("Classification Report:\n")
+    f.write(class_report)
 
 conf_matrix = confusion_matrix(y_int_test, np.argmax(pred0, axis =1))
-print("Confusion Matrix:")
-print(conf_matrix)
+np.savetxt(os.path.join(output_dir, "confusion_matrix.txt"), conf_matrix, fmt="%d", delimiter="\t")
 
 initial_epochs = 10
 
@@ -214,7 +196,6 @@ initial_epochs = 10
 from keras.callbacks import ModelCheckpoint
 
 model_dir = "Models"
-os.makedirs(model_dir, exist_ok=True)
 # Checkpoint für das Speichern des besten Modells (basierend auf Validierungsleistung)
 checkpointer = ModelCheckpoint(filepath = os.path.join(model_dir, 'best_model.keras'), verbose = 2, save_best_only = True)
 
@@ -227,7 +208,6 @@ history = model.fit(x = X_train_1, y = y_train_1,
 # Extrahieren der Trainings- und Validierungsgenauigkeit und -verlust für Visualisierung
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
-
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
@@ -244,7 +224,6 @@ plt.title('Training and Validation Accuracy (first training cycle)')
 plot_dir = "Auswertung_AI"
 os.makedirs(plot_dir, exist_ok=True)
 plt.savefig(os.path.join(plot_dir, 'acc_first_training_cycle.png'), dpi=300)
-plt.show()
 
 # Plot für Trainings- und Validierungsverlust
 #plt.subplot(2, 1, 2)
@@ -257,40 +236,28 @@ plt.ylim([0.6,1.5])
 plt.title('Training and Validation Loss (first training cycle)')
 plt.xlabel('epoch')
 plt.savefig(os.path.join(plot_dir,'loss_first_training_cycle.png'), dpi=300)
-plt.show()
 
 # ============================ Vorhersage auf Testdatensatz ============================
 # Vorhersagen auf dem Testdatensatz durchführen und Ergebnisse extrahieren
+output_dir = "Auswertung_AI"
 pred0 = np.argmax(model.predict(X_test), axis = 1)
 
 # Bewertung der Modellleistung auf den Testdaten
 accuracy = accuracy_score(y_int_test, pred0)
-print(f"Accuracy: {accuracy:.4f}")
+accuracy_text = f"Accuracy: {accuracy:.4f}\n"
+with open(os.path.join(output_dir, "accuracy_test_first_cycle.txt"), "w") as f:
+    f.write(accuracy_text)
 
 # Erzeugen einer Konfusionsmatrix und Klassifikationsberichtes
 class_report = classification_report(y_int_test, pred0)
-print("Classification Report:")
-print(class_report)
+with open(os.path.join(output_dir, "classification_report_test_first_cycle.txt"), "w") as f:
+    f.write("Classification Report:\n")
+    f.write(class_report)
 
 conf_matrix = confusion_matrix(y_int_test, pred0)
-print("Confusion Matrix:")
-print(conf_matrix)
+np.savetxt(os.path.join(output_dir, "confusion_matrix_test_first_cycle.txt"), conf_matrix, fmt="%d", delimiter="\t")
 
 # ============================ Feinabstimmung des Modells (Fine-tuning) ============================
-# Erstellen einer Datenaugmentierungsschicht zur Datenvielfaltsteigerung
-data_augmentation = tf.keras.Sequential([
-  tf.keras.layers.RandomFlip('horizontal'),
-  tf.keras.layers.RandomRotation(0.2),
-])
-
-# Basisnetzwerk für Bildverarbeitung: MobileNetV2 laden und für Feinabstimmung vorbereiten
-from tensorflow.keras.applications import MobileNetV2
-IMG_SIZE = (448, 448)
-IMG_SHAPE = IMG_SIZE + (3,)
-base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
-                                               include_top=False,
-                                               weights='imagenet')
-
 # Ausgabe der Schichtanzahl des Basisnetzes
 print("Number of layers in the base model: ", len(base_model.layers))
 
@@ -341,43 +308,42 @@ history_fine = model.fit(x = X_train_1, y = y_train_1,
 # Zusammenführen von Trainings- und Feintrainingsgenauigkeit und -verlust
 acc += history_fine.history['accuracy']
 val_acc += history_fine.history['val_accuracy']
-
 loss += history_fine.history['loss']
 val_loss += history_fine.history['val_loss']
 
 # Plot für Trainings- und Validierungsgenauigkeit nach beiden Trainingszyklen
 plt.figure(figsize=(12, 6))
-#plt.subplot(2, 1, 1)
 plt.plot(acc, label='Training Accuracy')
 plt.plot(val_acc, label='Validation Accuracy')
 plt.ylabel('Accuracy')
 plt.xlabel('epoch')
-plt.ylim([0.3, 1])
-plt.plot([initial_epochs,initial_epochs],
-          plt.ylim(), label='Start Second Cycle of Fine Tuning')
+plt.ylim([0.3, 1])  # Setzt die Y-Achsenbegrenzung
+
+# Vertikale Linie zum Markieren des Startpunkts des Fine-Tunings
+plt.axvline(x=initial_epochs, color='green', linestyle='--', label='Start Second Cycle of Fine Tuning')
 plt.legend(loc='lower right')
 plt.title('Training and Validation Accuracy (both training cycles)')
-plt.savefig('acc_both_training_cycle.png', dpi=300)
-plt.show()
+plt.savefig(os.path.join(plot_dir, 'acc_both_training_cycle.png'), dpi=300)
+
 
 # Plot für Trainings- und Validierungsverlust nach beiden Trainingszyklen
-#plt.subplot(2, 1, 2)
 plt.figure(figsize=(12, 6))
 plt.plot(loss, label='Training Loss')
 plt.plot(val_loss, label='Validation Loss')
-plt.ylim([0, 1.4])
+plt.ylim([0, 1.4])  # Setzt die Y-Achsenbegrenzung
+
+# Vertikale Linie zum Markieren des Startpunkts des Fine-Tunings
+plt.axvline(x=initial_epochs, color='green', linestyle='--', label='Start Second Cycle of Fine Tuning')
 plt.ylabel('Cross Entropy')
 plt.xlabel('epoch')
-plt.plot([initial_epochs,initial_epochs],
-         plt.ylim(), label='Start Second Cycle of Fine Tuning')
 plt.legend(loc='upper right')
 plt.title('Training and Validation Loss (both training cycles)')
-plt.xlabel('epoch')
 plt.savefig(os.path.join(plot_dir, 'loss_both_training_cycle.png'), dpi=300)
-plt.show()
+
 
 # ============================ Finale Modellbewertung ============================
 # Finale Vorhersagen auf dem Testdatensatz nach dem Fine-Tuning
+output_dir = "Auswertung_AI"
 pred0 = np.argmax(model.predict(X_test), axis = 1)
 
 # Laden der finalen, besten Gewichtungen
@@ -385,32 +351,23 @@ model.load_weights(os.path.join(model_dir, 'best_model.keras'))
 
 # Finale Evaluierung des Modells
 accuracy = accuracy_score(y_int_test, pred0)
-print(f"Accuracy: {accuracy:.4f}")
+accuracy_text = f"Accuracy: {accuracy:.4f}\n"
+with open(os.path.join(output_dir, "accuracy_test_full_cycle.txt"), "w") as f:
+    f.write(accuracy_text)
+
 class_report = classification_report(y_int_test, pred0)
-print("Classification Report:")
-print(class_report)
+with open(os.path.join(output_dir, "classification_report_test_full_cycle.txt"), "w") as f:
+    f.write("Classification Report:\n")
+    f.write(class_report)
+
 conf_matrix = confusion_matrix(y_int_test, pred0)
-print("Confusion Matrix:")
-print(conf_matrix)
-pred0 = np.argmax(model.predict(X_expl), axis = 1)
+np.savetxt(os.path.join(output_dir, "confusion_matrix_test_full_cycle.txt"), conf_matrix, fmt="%d", delimiter="\t")
 
-accuracy = accuracy_score(y_int_expl, pred0)
-print(f"Accuracy: {accuracy:.4f}")
-
-# Generate a classification report
-class_report = classification_report(y_int_expl, pred0)
-print("Classification Report:")
-print(class_report)
-
-# Generate a confusion matrix
-conf_matrix = confusion_matrix(y_int_expl, pred0)
-print("Confusion Matrix:")
-print(conf_matrix)
 
 # ============================ Speichern des gesamten Modells ============================
 # Endgültiges Speichern des trainierten Modells für zukünftige Verwendung
 final_model_dir="Models"
-os.makedirs(final_model_dir, exist_ok=True)
+
 keras.saving.save_model(model,os.path.join(final_model_dir, 'MobileV2.keras'))
-#%%
+
 model.summary()
