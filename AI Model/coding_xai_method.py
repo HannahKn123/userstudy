@@ -28,11 +28,11 @@ def import_data(folder_path, train):
     """
     # Festlegen des spezifischen Pfades basierend auf dem Datentyp
     if train == 1:
-        folder_path = os.path.join(folder_path, "train_1")
+        folder_path = os.path.join(folder_path, "train")
         print('Importing Training data...')
     elif train == 0:
         print('Importing Test data...')
-        folder_path = os.path.join(folder_path, "test_1")
+        folder_path = os.path.join(folder_path, "test")
 
     # Liste aller Klassenordner innerhalb des Pfads erstellen
     class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]

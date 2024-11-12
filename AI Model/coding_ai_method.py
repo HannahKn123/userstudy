@@ -239,7 +239,7 @@ plt.savefig(os.path.join(plot_dir,'loss_first_training_cycle.png'), dpi=300)
 
 # ============================ Vorhersage auf Testdatensatz ============================
 # Vorhersagen auf dem Testdatensatz durchführen und Ergebnisse extrahieren
-output_dir = "Auswertung_AI"
+output_dir = ("Auswertung_AI")
 pred0 = np.argmax(model.predict(X_test), axis = 1)
 
 # Bewertung der Modellleistung auf den Testdaten
@@ -259,7 +259,22 @@ np.savetxt(os.path.join(output_dir, "confusion_matrix_test_first_cycle.txt"), co
 
 # ============================ Feinabstimmung des Modells (Fine-tuning) ============================
 # Ausgabe der Schichtanzahl des Basisnetzes
+
+data_augmentation = tf.keras.Sequential([
+  tf.keras.layers.RandomFlip('horizontal'),
+  tf.keras.layers.RandomRotation(0.2),
+])
+
+from tensorflow.keras.applications import MobileNetV2
+
+IMG_SIZE = (448, 448)
+IMG_SHAPE = IMG_SIZE + (3,)
+base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
+                                               include_top=False,
+                                               weights='imagenet')
 print("Number of layers in the base model: ", len(base_model.layers))
+
+
 
 # Legen der Feinabstimmungsschicht fest (nur Schichten ab dieser Ebene sind trainierbar)
 fine_tune_at = 75

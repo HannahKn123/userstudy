@@ -2,8 +2,8 @@ import os
 from PIL import Image
 
 # Folder paths
-input_folder = "berlin"
-output_folder = "berlin"
+input_folder = "./userstudy_deploy/www/examples/groß"
+output_folder = "/userstudy_deploy/www/examples/groß"
 
 # Create the output folder if it does not exist
 os.makedirs(output_folder, exist_ok=True)
@@ -22,9 +22,9 @@ for filename in os.listdir(input_folder):
 
         # Double the image dimensions if reasonably sized
         max_size = 2000  # Adjust if needed to limit maximum dimensions
-        new_width = min(image.width * 1, max_size)
-        new_height = min(image.height * 1, max_size)
-        resized_image = image.resize((new_width, new_height), Image.LANCZOS)
+        new_width = min(image.width * 1.5, max_size)
+        new_height = min(image.height * 1.5, max_size)
+        resized_image = image.resize((int(new_width), int(new_height)), Image.LANCZOS)
 
         # Convert to JPEG to ensure better compression
         resized_image = resized_image.convert("RGB")  # Ensures compatibility with JPEG format
@@ -34,7 +34,7 @@ for filename in os.listdir(input_folder):
         output_path = os.path.join(output_folder, output_filename)
 
         # Compress the image to get it under 100 KB
-        quality = 85  # Start with a moderate quality level
+        ''' quality = 85  # Start with a moderate quality level
 
         # Save the image, compressing until the file size is under 100 KB
         while True:
@@ -45,7 +45,7 @@ for filename in os.listdir(input_folder):
             if quality < 10:  # Stop if quality gets too low
                 print(f"Could not reduce {filename} below 100 KB at acceptable quality.")
                 break
-
+        '''
         print(f"{filename} has been successfully resized and saved in {output_folder} with reduced file size.")
 
 print("All images have been successfully resized and saved with reduced file size.")
