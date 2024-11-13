@@ -32,7 +32,7 @@ def import_data(folder_path, train):
         print('Importing Training data...')
     elif train == 0:
         print('Importing Test data...')
-        folder_path = os.path.join(folder_path, "test")
+        folder_path = os.path.join(folder_path, "data_sampling")
 
     # Liste aller Klassenordner innerhalb des Pfads erstellen
     class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]
@@ -259,21 +259,50 @@ for i, img in enumerate(X_test):
     original_name = os.path.splitext(image_names_test[i])[0]  # Entfernt die Dateiendung (z. B. .png oder .jpg)
 
     # Sicherstellen, dass das Verzeichnis "ImportantPixels_Image" existiert
-    os.makedirs("ImportantPixels_Image", exist_ok=True)
-    os.makedirs("GradCAM", exist_ok=True)
-    os.makedirs("ImportantPixels", exist_ok=True)
+    os.makedirs("ImportantPixels_Image_us", exist_ok=True)
+    os.makedirs("GradCAM_us", exist_ok=True)
+    os.makedirs("ImportantPixels_us", exist_ok=True)
 
     # Pfad und Name für die Excel-Datei im Ordner "ImportantPixels"
     excel_filename = f"{original_name}_{true_class}_{pred_class}.xlsx"
-    excel_path = os.path.join("ImportantPixels", excel_filename)
+    excel_path = os.path.join("ImportantPixels_us", excel_filename)
     save_important_pixels_to_excel(important_pixels, excel_path)
 
     # Pfad und Name für das GradCAM-Bild im Ordner "GradCAM"
     gradcam_filename = f"{original_name}_GradCAM.png"
-    gradcam_path = os.path.join("GradCAM", gradcam_filename)
+    gradcam_path = os.path.join("GradCAM_us", gradcam_filename)
     save_heatmap_overlay(img, heatmap, gradcam_path)
 
     # Pfad und Name für das Bild mit den markierten wichtigen Pixeln im Ordner "ImportantPixels_Image"
     highlighted_image_filename = f"{original_name}_{true_class}_{pred_class}.png"
-    highlighted_image_path = os.path.join("ImportantPixels_Image", highlighted_image_filename)
+    highlighted_image_path = os.path.join("ImportantPixels_Image_us", highlighted_image_filename)
     save_transparent_highlight(img, important_pixels, highlighted_image_path)
+
+
+# Berechnung der Modellvorhersagen für die Testdaten
+y_pred_probs = model.predict(X_test)
+y_pred = np.argmax(y_pred_probs, axis=1)
+
+# Berechnung und Speichern der Accuracy
+accuracy = accuracy_score(y_int_test, y_pred)
+accuracy_path = os.path.join("Auswertung_AI", "accuracy_us.txt")
+with open(accuracy_path, "w") as f:
+    f.write(f"Accuracy: {accuracy}\n")
+print(f"Accuracy saved to {accuracy_path}")
+
+# Berechnung und Speichern der Confusion Matrix
+conf_matrix = confusion_matrix(y_int_test, y_pred)
+conf_matrix_path = os.path.join("Auswertung_AI", "confusion_matrix_us.txt")
+with open(conf_matrix_path, "w") as f:
+    f.write("Confusion Matrix:\n")
+    for row in conf_matrix:
+        f.write(" ".join(map(str, row)) + "\n")
+print(f"Confusion Matrix saved to {conf_matrix_path}")
+
+# Berechnung und Speichern des Classification Reports
+class_report = classification_report(y_int_test, y_pred, target_names=label_mapping.values())
+class_report_path = os.path.join("Auswertung_AI", "Classification_report_us.txt")
+with open(class_report_path, "w") as f:
+    f.write("Classification Report:\n")
+    f.write(class_report)
+print(f"Classification Report saved to {class_report_path}")
