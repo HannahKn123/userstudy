@@ -1,3 +1,4 @@
+#Modelv1 und Annotation der Studienbilder
 #Importiere alle notwendigen Pakete
 import os
 import numpy as np

@@ -51,14 +51,9 @@ if test_img is None:
 
 # Definieren gezielter wichtiger Pixel am Rand des Bildes
 important_pixels_test = [
-    (0, 0, 1.0),  # Linke obere Ecke
-    (test_img.shape[1] - 1, 0, 1.0),  # Rechte obere Ecke
-    (0, test_img.shape[0] - 1, 1.0),  # Linke untere Ecke
-    (test_img.shape[1] - 1, test_img.shape[0] - 1, 1.0),  # Rechte untere Ecke
-    (test_img.shape[1] // 2, 0, 1.0),  # Mitte obere Kante
-    (test_img.shape[1] // 2, test_img.shape[0] - 1, 1.0),  # Mitte untere Kante
-    (0, test_img.shape[0] // 2, 1.0),  # Mitte linke Kante
-    (test_img.shape[1] - 1, test_img.shape[0] // 2, 1.0)  # Mitte rechte Kante
+    (0, 0, 10.0),  # Linke obere Ecke
+    (test_img.shape[1] - 1, 0, 10.0),  # Rechte obere Ecke
+    (test_img.shape[1] // 2, test_img.shape[0] - 1, 10.0),  # Mitte untere Kante
 ]
 
 # Erstellen des Ordners "Test_ImportantPixels_Image" falls noch nicht vorhanden
