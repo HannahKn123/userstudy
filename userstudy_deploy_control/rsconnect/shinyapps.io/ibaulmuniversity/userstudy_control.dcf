@@ -1,0 +1,10 @@
+name: userstudy_control
+title:
+username: ibaulmuniversity
+account: ibaulmuniversity
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13371046
+bundleId: 9380676
+url: https://ibaulmuniversity.shinyapps.io/userstudy_control/
+version: 1

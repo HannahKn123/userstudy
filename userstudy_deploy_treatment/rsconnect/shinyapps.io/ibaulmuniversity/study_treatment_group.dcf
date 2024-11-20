@@ -1,0 +1,10 @@
+name: study_treatment_group
+title:
+username: ibaulmuniversity
+account: ibaulmuniversity
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13370913
+bundleId: 9380140
+url: https://ibaulmuniversity.shinyapps.io/study_treatment_group/
+version: 1

@@ -1,0 +1,10 @@
+name: userstudy_treatment
+title:
+username: ibaulmuniversity
+account: ibaulmuniversity
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13371191
+bundleId: 9380706
+url: https://ibaulmuniversity.shinyapps.io/userstudy_treatment/
+version: 1
