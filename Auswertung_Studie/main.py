@@ -162,6 +162,7 @@ def create_base_name(text):
     text = text.replace("treatment", "t")
     text = text.replace("control", "c")
     text = text.replace(".csv", "")
+    text = text.replace("_img", "")
     return text
 
 def create_base_name2(text):
