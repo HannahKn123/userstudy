@@ -52,7 +52,7 @@ def import_data(folder_path, train):
 
   class_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f))]
 
-  # Initialize an empty list to store pixel values
+  # Initialize an empty list to store xai_pixel values
   images = []
   ground_truth_labels = []
 
