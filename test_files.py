@@ -24,7 +24,7 @@ for filename in os.listdir(directory):
 df = pd.DataFrame(data)
 
 # Save the DataFrame to a CSV file
-output_path = os.path.join(directory, "extracted_data.csv")
+output_path = os.path.join(directory, "input_data_list.csv")
 df.to_csv(output_path, index=False)
 
 # Print the DataFrame to verify
