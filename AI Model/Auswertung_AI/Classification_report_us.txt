@@ -1,11 +1,11 @@
 Classification Report:
               precision    recall  f1-score   support
 
-      Berlin       0.95      0.77      0.85        26
-     Hamburg       0.86      0.96      0.91        25
-     TelAviv       0.81      0.88      0.85        25
-   Jerusalem       0.84      0.84      0.84        25
+      Berlin       0.87      0.77      0.82        26
+     Hamburg       0.84      0.84      0.84        25
+     TelAviv       0.71      0.80      0.75        25
+   Jerusalem       0.76      0.76      0.76        25
 
-    accuracy                           0.86       101
-   macro avg       0.87      0.86      0.86       101
-weighted avg       0.87      0.86      0.86       101
+    accuracy                           0.79       101
+   macro avg       0.80      0.79      0.79       101
+weighted avg       0.80      0.79      0.79       101

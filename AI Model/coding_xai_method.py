@@ -1,4 +1,3 @@
-#Modelv1 und Annotation der Studienbilder
 #Importiere alle notwendigen Pakete
 import os
 import numpy as np
@@ -213,6 +212,24 @@ def save_important_pixels_to_excel(important_pixels, output_path):
     print(f"Important pixels saved to {output_path}")
 
 
+def save_all_pixels_to_excel(heatmap_resized, output_path):
+    """
+    Speichert alle Pixel und deren Importance in einer Excel-Datei.
+
+    Argumente:
+    - heatmap_resized: Die Heatmap, die auf Bildgröße skaliert wurde.
+    - output_path: Der Pfad, an dem die Excel-Datei gespeichert werden soll.
+    """
+    all_pixels = []
+    for y in range(heatmap_resized.shape[0]):
+        for x in range(heatmap_resized.shape[1]):
+            all_pixels.append((x, y, heatmap_resized[y, x]))
+
+    # Erstellen eines DataFrame und Speichern in einer Excel-Datei
+    df = pd.DataFrame(all_pixels, columns=["X", "Y", "Importance"])
+    df.to_excel(output_path, index=False)
+    print(f"All pixels saved to {output_path}")
+
 def save_heatmap_overlay(img, heatmap, output_path):
     # Heatmap in Größe des Bildes skalieren
     heatmap_resized = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
@@ -259,26 +276,32 @@ for i, img in enumerate(X_test):
     # Verwenden des Originalnamens des Bildes ohne Dateiendung
     original_name = os.path.splitext(image_names_test[i])[0]  # Entfernt die Dateiendung (z. B. .png oder .jpg)
 
-    # Sicherstellen, dass das Verzeichnis "ImportantPixels_Image" existiert
+    # Sicherstellen, dass die Verzeichnisse existieren
     os.makedirs("ImportantPixels_Image_us", exist_ok=True)
     os.makedirs("GradCAM_us", exist_ok=True)
     os.makedirs("ImportantPixels_us", exist_ok=True)
+    os.makedirs("AllPixels_us", exist_ok=True)  # Neuer Ordner für alle Pixel
 
-    # Pfad und Name für die Excel-Datei im Ordner "ImportantPixels"
-    excel_filename = f"{original_name}_{true_class}_{pred_class}.xlsx"
+    # Speichern der wichtigen Pixel über dem Threshold
+    excel_filename = f"{original_name}_{true_class}_{pred_class}_ImportantPixels.xlsx"
     excel_path = os.path.join("ImportantPixels_us", excel_filename)
     save_important_pixels_to_excel(important_pixels, excel_path)
+
+    # Speichern aller Pixel mit ihrer Importance
+    all_pixels_filename = f"{original_name}_{true_class}_{pred_class}_AllPixels.xlsx"
+    all_pixels_path = os.path.join("AllPixels_us", all_pixels_filename)
+    heatmap_resized = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+    save_all_pixels_to_excel(heatmap_resized, all_pixels_path)
 
     # Pfad und Name für das GradCAM-Bild im Ordner "GradCAM"
     gradcam_filename = f"{original_name}_GradCAM.png"
     gradcam_path = os.path.join("GradCAM_us", gradcam_filename)
     save_heatmap_overlay(img, heatmap, gradcam_path)
 
-    # Pfad und Name für das Bild mit den markierten wichtigen Pixeln im Ordner "ImportantPixels_Image"
+    # Pfad und Name für das Bild mit den markierten wichtigen Pixeln
     highlighted_image_filename = f"{original_name}_{true_class}_{pred_class}.png"
     highlighted_image_path = os.path.join("ImportantPixels_Image_us", highlighted_image_filename)
     save_transparent_highlight(img, important_pixels, highlighted_image_path)
-
 
 # Berechnung der Modellvorhersagen für die Testdaten
 y_pred_probs = model.predict(X_test)
