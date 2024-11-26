@@ -16,7 +16,7 @@ source("helper.R")
 
 # Load the image globally so it's accessible throughout the app
 loaded_image <- image_read("www/berlin_attention_check_Berlin_Hamburg.png")
-loaded_image_ueb <- image_read("www/UE4.png")
+loaded_image_ueb <- image_read("www/anno2.png")
 
 # Get image dimensions for display at original size
 img_info <- image_info(loaded_image)
@@ -28,6 +28,9 @@ img_info_ueb <- image_info(loaded_image_ueb)
 img_width_ueb  <- img_info_ueb$width
 img_height_ueb  <- img_info_ueb$height
 
+
+random_number <- sample(0:1, 1) #0 = control / 1 = treatment
+print(paste("Control or Treatment:", random_number))
 
 
 
@@ -112,7 +115,7 @@ server <- function(input, output, session) {
     current_page <- page()
     if (current_page == 1) {  # Initial instructions page
       tagList(
-        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             h2("Welcome! We're Glad to Have You Here!", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             # Paragraph with increased margin-bottom to add space
@@ -121,10 +124,10 @@ server <- function(input, output, session) {
             
             # User ID input
             div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
-                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center;", "Please enter your user ID:"),
-                          placeholder = "User ID", width = '100%'),
+                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center;", "Please enter your Prolific ID:"),
+                          placeholder = "Prolific ID", width = '100%'),
                 div(style = "font-size: 12px; color: #666; text-align: center;",
-                    "The user ID is required to track your work.")
+                    "The Prolific ID is required to track your work.")
             ),
             
             # Continue button
@@ -136,29 +139,20 @@ server <- function(input, output, session) {
       )
     } else if (current_page == 2) {  # Initial instructions page
       tagList(
-        div(style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             h2("Prolific Introduction", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             # Paragraph with increased margin-bottom to add space
-            p("Thank you for your interest in participating in our study on 'Human-AI Collaboration'. This research is conducted by the Institute for Business Analytics at the University of Ulm. The data collected will be used as part of our research project and will contribute to scientific presentations and publications. Before beginning the study, please carefully read the following consent form and general information.",
+            p("Thank you for your interest in participating in our study on 'Human-AI Collaboration'. Before beginning the study, please carefully read the following consent form and general information.",
               style = "text-align: center; margin-top: 20px; margin-bottom: 40px;"),
-            
-            strong("What is the Study About?"), 
-            p("The study explores how successful collaboration between humans and artificial intelligence (AI) can be achieved. During the study, you will be shown five different images from four distinct cities. Your task is to assign each image to the correct city. Additionally, you will use a marking tool to highlight any features on the image that were decisive in making your decision. Your markings will be used after the study to train the AI and improve its performance.  To assist you, you will also receive information on how the AI has classified the image.",
+          
+            strong("What Are the Study Conditions?", style = "text-align: center; margin-top: 20px;font-size: 16px;"), 
+            p("The study will take ", strong("approximately 8 minutes"), " to complete. Please answer all questions as accurately and precisely as possible. You are free to withdraw from the study at any time by closing your browser window."),
+            p("Please note that ", strong("attention checks"), " will be conducted throughout the study. Failure to pass the checks will result in no compensation being paid to you.",
               style = "text-align: center; margin-bottom: 40px;"),
             
-            strong("What Are the Study Conditions?", style = "text-align: center; margin-top: 20px;"), 
-            p("The study will take approximately 8 minutes to complete. Please answer all questions as accurately and precisely as possible. You are free to withdraw from the study at any time by closing your browser window."),
-            p("Please note that attention checks will be conducted throughout the study. Failure to pass these checks will result in early exclusion from the study, and in such cases, no compensation will be provided.",
-              style = "text-align: center; margin-bottom: 40px;"),
-            
-            strong("How Is Data Collected?", style = "text-align: center; margin-bottom: 40px;"),
-            p("Data collection and analysis are conducted exclusively in an anonymized and strictly confidential manner, ensuring that your data cannot be linked to your identity. The anonymized data will be used solely by the Institute for Business Analytics at the University of Ulm. You may withdraw your consent for data collection and analysis at any time after the study, without providing a reason.", 
-              style = "text-align: center; margin-bottom: 40px;"),
-            
-            strong("Do You Have Any Questions?", style = "text-align: center; margin-bottom: 40px;"), 
-            p("If you have any questions or comments, please feel free to contact us at hannah.knehr@uni-ulm.de."),
-            p("Please note that your consent to the use of your data is required to participate in the study.",
+            strong("How Is Data Collected?", style = "text-align: center; margin-bottom: 40px; font-size: 16px;"),
+            p("Data collection and analysis are conducted exclusively in an anonymized and strictly confidential manner, ensuring that your data cannot be linked to your identity. The anonymized data will be used solely by the Institute for Business Analytics at the University of Ulm. The data collected will be used as part of our research project and will contribute to scientific presentations and publications. You may withdraw your consent for data collection and analysis at any time after the study, without providing a reason.", 
               style = "text-align: center; margin-bottom: 40px;"),
             
             div(style = "width: 100%; display: flex; align-items: center;",
@@ -179,20 +173,20 @@ server <- function(input, output, session) {
       )
     } else if (current_page == 3) {  # Second introduction page
       tagList(
-        div(id = "intro1", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(id = "intro1", style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             h2("Introduction to the Study", style = "color: #003366; font-weight: bold; text-align: center;"),
             
             p("You will be shown  ", strong("Google Maps images") , " - each depicting a random location from one of four cities: ", 
-              style = "text-align: center; margin-top: 20px;"),
-            p(HTML("<span style='color: #003366; font-weight: bold;'>Berlin, Hamburg, Jerusalem, or Tel Aviv</span>."),
-              style = "text-align: center;"),
+              style = "text-align: left; margin-top: 20px;"),
+            p(HTML("<span style='font-weight: bold;'>Berlin, Hamburg, Jerusalem, or Tel Aviv</span>."),
+              style = "text-align: left;"),
             
-            p("For each image, the Artificial intelligence model has predicted ", strong("the location"), " and highlighted ", strong("important areas"), " that influenced its decision. We are providing you with this information.", 
-              style = "text-align: center;"),
+            p("Our goal is to ", strong("improve the performance of Artificial Intelligence (AI)"), " in recognizing cities. The AI model has already analyzed these images, predicted the city, and highlighted important areas that influenced its decision. We will provide you with this information.",
+              style = "text-align: left;"),
             
             
             div(
-              strong("Keep in mind that Artificial Intelligence can make mistakes, so the Artificial Intelligence's choice may not always be correct."),
+              strong("However, AI can make mistakes. Your task is to help improve the AI by reviewing its predictions and providing feedback."),
               style = "color: red;"
             ),
             
@@ -200,36 +194,51 @@ server <- function(input, output, session) {
             
         ), 
         
-        div(id = "intro2", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            
-            p(HTML("You will have <span style='font-weight: bold;'>three tasks</span> for each image:"), 
-              style = "text-align: left;"),
-            
+        div(id = "intro2", style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            h5("You will have three tasks for each image:", style = "text-align: left; color: #003366;"),
+       
             tags$ol(style = "list-style-type: decimal; padding-left: 2;",  # Adds numbers and removes indentation
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Choose a City: "), "Review the image and select the city where you believe it was captured."))
+                        tags$li(p(strong("Choose a City: "), "Look at the image and decide which city you think it shows. Use the AI’s prediction as a guide, but remember that it might be wrong."))
                     ),
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Annotate the Image: "), "Use the provided marking tool to highlight areas in the image that influenced your choice."))
+                        tags$li(p(strong("Mark Important Areas on the Image: "), "Mark the areas on the image that influenced your decision.")),
+                        tags$ul(style = "margin-top: -10px;", 
+                          tags$li("Highlight areas where you agree with the AI’s suggestions."),
+                          tags$li("Add any areas you consider important but were not highlighted by the AI.")
+                        )
                     ),
+                    
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Choose a Confidence Level: "), "Select how confident you are in your choice, from 'Very Unsure' to 'Very Sure'."))
+                        tags$li(p(strong("Choose a Confidence Level: "), "Indicate how confident you are in your choice, from 'Very Unsure' to 'Very Sure.'"))
                     )
+                    
             ),
             
             actionButton("next_page_step_2", "Continue",  icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 20px;")
             
         ),
         
-        div(id = "intro3", style = "text-align: center; margin: 0 auto; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+        div(id = "intro3", style = "text-align: left; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
             
-            h4("Bonus Opportunity and Attention Checks", style = "text-align: center; color: #003366;"),
+            h5("Bonus Opportunity", style = "text-align: left; color: #003366;"),
             
-            p("Your feedback is essential to the success of our research project, and the accuracy of your responses plays a crucial role. You have the opportunity to increase your earnings through particularly precise answers: If you correctly identify all cities and accurately mark the relevant areas on the images, you will receive an additional bonus payment of 1 USD.",
-              style = "text-align: center; margin-top: 10px;"),
+            p("Your feedback will help us improve the accuracy of our AI model. If you carefully identify the cities and precisely mark the relevant areas on the images, you can earn a ", strong("bonus payment of 1 USD"), " in addition to your fixed reward.",
+              style = "text-align: left; margin-top: 10px;"),
             
-            p("There will be attention checks for each of the three steps. Failure to pass these checks will result in no payment.",
-              style = "font-weight: bold; color: red; text-align: center; margin-top: 10px;"),
+            h5("Attention Checks", style = "text-align: left; color: #003366;"),
+            
+            p("To ensure quality, your responses will be evaluated through attention checks. These checks will assess:",
+              style = "text-align: left; margin-top: 10px;"
+            ),
+            tags$ul(style = "margin-top: -5px; text-align: left; padding-left: 40px;",  # Adjust indentation
+                    tags$li("The accuracy of your city selections."),
+                    tags$li("The precision of your markings on the images.")
+            ),
+            p("Failure to pass these checks will result in no payment.",
+              style = "font-weight: bold; text-align: left; margin-top: 10px;"
+            )
+            ,
             
             # Continue button
             div(style = "text-align: center; margin-top: 20px;",
@@ -239,41 +248,67 @@ server <- function(input, output, session) {
         )
       )
     } else if (current_page == 4){
-      tagList(
-        div(style = "text-align: center; margin: 0 auto; margin-top: 30px; max-width: 800px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-     
-          # Page Title
-          h2("Marking Instructions", style = "margin-top: 20px; color: #003366; font-weight: bold; text-align: center;"),
-          
-          p(style = "text-align: center; margin-top: 10px;","In the video below, the tool you are about to use is explained."),
-          div(style = "text-align: center; margin-top: 20px; margin-bottom: 20px;",
-              tags$img(src = "examples/gif2.gif", width = "auto", height = "500px")
-          ),
-          p(style = "text-align: center; margin-top: 20px;","Now it's your turn!"),
-          p(style = "text-align: center;","Before starting the study, please familiarize yourself with the marking tool by marking the gray shapes in the image. Take your time and ensure each shape is correctly identified.", strong("The result will be saved and used as an attention check")),
-          
-          # Display the image for annotation
-          div(style = paste("margin-top: 40px; display: flex; justify-content: center; align-items: center; width:", img_width_ueb, "px; height:", img_height_ueb, "px; padding: 0; margin: 0;"),
-              plotOutput("imagePlot_uebung", click = "image_click_uebung", 
-                         width = paste0(img_width_ueb, "px"), height = paste0(img_height_ueb, "px"))
-          ),
-            
-          div(style = "display: flex; gap: 10px; margin-top: 15px; justify-content: center;",  
-              actionButton("clear_uebung", "Clear All Shapes", icon = icon("trash"), 
-                           class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),  
-              actionButton("delete_last_polygon_uebung", "Delete Last Shape", icon = icon("trash"), 
-                           class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),  
-              # Add in the UI section where other action buttons are defined
-              actionButton("delete_last_corner", "Delete Last Corner", icon = icon("trash"), 
-                           class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),
-              actionButton("end_polygon_uebung", "Complete Shape", icon = icon("check"), 
-                           class = "btn-secondary", style = "color: green; padding: 5px 7px; font-size: 12px;"),  
-              actionButton("next_page", "Continue", icon = icon("arrow-right"), 
-                           class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
-          ),
-        ), 
-      )
       
+      tagList(
+        div(style = "text-align: center; margin: 0 auto; max-width: 1400px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            
+          div(
+            h2("Marking Instructions", style = "color: #003366; font-weight: bold; text-align: center; margin-bottom: -30px")
+          ), 
+          
+          div(style = "display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 0 auto;",  # Set gap to 0px to remove extra space
+              div(class = "highlight-container",
+                style = "background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1500px; margin-bottom: 2px;",  
+                div(class = "flex-container", 
+                    style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",
+                    
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; justify-content: center; align-items: center;",  
+                        p(style = "text-align: center;", "In the video below, the tool you are about to use is explained.")
+                    ),
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; justify-content: center; align-items: center;",  
+                        p(style = "text-align: center;", "Now it's your turn! Before starting the study, please familiarize yourself with the marking tool by marking the gray shapes in the image. Take your time and ensure each shape is correctly identified.", strong("The result will be saved and used as an attention check."))
+                    )
+                )
+            ),
+            
+            div(class = "decision-container",
+                style = "background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1500px; margin-top: 2px;",  
+                div(class = "flex-container", 
+                    style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; flex-direction: column;",  
+                        div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
+                            div(style = "text-align: center;",
+                                tags$img(src = "examples/gif2.gif", width = "auto", height = "500px")
+                            ),
+                        ),
+                    ),
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; flex-direction: column; align-items: center;",  
+                         
+                        # Display the image for annotation
+                        div(style = paste("margin-top: 10px; display: flex; justify-content: center; align-items: center; width:", img_width_ueb, "px; height:", img_height_ueb, "px; padding: 0; margin: 0;"),
+                            plotOutput("imagePlot_uebung", click = "image_click_uebung", 
+                                       width = paste0(img_width_ueb, "px"), height = paste0(img_height_ueb, "px"))
+                        ),
+                        
+                        div(style = "display: flex; gap: 10px; margin-top: 15px; justify-content: center;",  
+                            actionButton("clear_uebung", "Clear All Shapes", icon = icon("trash"), 
+                                         class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),  
+                            actionButton("delete_last_polygon_uebung", "Delete Last Shape", icon = icon("trash"), 
+                                         class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),  
+                            # Add in the UI section where other action buttons are defined
+                            actionButton("delete_last_corner", "Delete Last Corner", icon = icon("trash"), 
+                                         class = "btn-secondary", style = "color: red; padding: 5px 7px; font-size: 12px;"),
+                            actionButton("end_polygon_uebung", "Complete Shape", icon = icon("check"), 
+                                         class = "btn-secondary", style = "color: green; padding: 5px 7px; font-size: 12px;"),  
+                            actionButton("next_page", "Continue", icon = icon("arrow-right"), 
+                                         class = "btn-primary", style = "padding: 5px 7px; font-size: 12px;")  
+                        ),
+                    ), 
+                  )
+                )
+           )
+        )
+      )
     } else if (current_page == 9) {  # Page 6 content with updated text for annotation
       # Reset polygon ID
       coords(tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
@@ -303,8 +338,12 @@ server <- function(input, output, session) {
                     ),
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; min-height: 10px;",  
                         div(style = "display: flex; text-align: left; width: 100%;",  
-                            p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
+                            if(random_number == 1){
+                              p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
                               " shown below were key factors in its decision.")
+                            } else{
+                              p("The image is shown below.")
+                            }
                         )
                     )
                 )
@@ -397,8 +436,12 @@ server <- function(input, output, session) {
                     ),
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; min-height: 10px;",  
                         div(style = "display: flex; text-align: left; width: 100%;",  
-                            p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
-                              " shown below were key factors in its decision.")
+                            if(random_number == 1){
+                              p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
+                                " shown below were key factors in its decision.")
+                            } else{
+                              p("The image is shown below.")
+                            }
                         )
                     )
                 )
@@ -426,7 +469,7 @@ server <- function(input, output, session) {
                             choices = c("", "Very unsure", "Unsure", "Neutral", "Sure", "Very sure"),
                             selected = ""
                           )
-                        )
+                        ),
                         
                     ),
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
@@ -928,14 +971,14 @@ server <- function(input, output, session) {
       
       if (annotation_missing && city_not_selected) {
         showModal(modalDialog(
-          title = "Please choose a city and annotate the picture!",
-          "Make sure to select a city and annotate the picture before proceeding.",
+          title = "Please choose a city and markt the image!",
+          "Make sure to select a city and annotate the image before proceeding.",
           easyClose = TRUE
         ))
       } else if (annotation_missing) {
         showModal(modalDialog(
-          title = "Please annotate the picture!",
-          "Make sure to annotate the picture before proceeding.",
+          title = "Please annotate the image!",
+          "Make sure to annotate the image before proceeding.",
           easyClose = TRUE
         ))
       } else if (confidence_level_missing) {
@@ -1025,8 +1068,8 @@ server <- function(input, output, session) {
       
       if (annotation_missing) {
         showModal(modalDialog(
-          title = "Please annotate the picture!",
-          "Make sure to annotate the picture before proceeding.",
+          title = "Please annotate the image!",
+          "Make sure to annotate the image before proceeding.",
           easyClose = TRUE
         ))
         return()  # Exit if annotations are missing
@@ -1092,14 +1135,14 @@ server <- function(input, output, session) {
       
       if (annotation_missing && city_not_selected) {
         showModal(modalDialog(
-          title = "Please choose a city and annotate the picture!",
-          "Make sure to select a city and annotate the picture before proceeding.",
+          title = "Please choose a city and annotate the image!",
+          "Make sure to select a city and annotate the image before proceeding.",
           easyClose = TRUE
         ))
       } else if (annotation_missing) {
         showModal(modalDialog(
-          title = "Please annotate the picture!",
-          "Make sure to annotate the picture before proceeding.",
+          title = "Please annotate the image!",
+          "Make sure to annotate the image before proceeding.",
           easyClose = TRUE
         ))
       } else if (confidence_level_missing) {
