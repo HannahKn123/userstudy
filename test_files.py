@@ -1,5 +1,5 @@
 import os
-import re  # Import the re module for regular expressions
+import re
 import pandas as pd
 
 # Specify the directory containing the files
