@@ -14,41 +14,60 @@ options(shiny.trace = FALSE)
 # Lade helper.R für die save_to_nextcloud Funktion
 source("helper.R")
 
-# Load the image globally so it's accessible throughout the app
-loaded_image <- image_read("www/berlin_attention_check_Berlin_Hamburg.png")
-loaded_image_ueb <- image_read("www/anno2.png")
-
-# Get image dimensions for display at original size
-img_info <- image_info(loaded_image)
-img_width <- img_info$width
-img_height <- img_info$height
-
-# Get image dimensions for display at original size
-img_info_ueb <- image_info(loaded_image_ueb)
-img_width_ueb  <- img_info_ueb$width
-img_height_ueb  <- img_info_ueb$height
-
-
-random_number <- sample(0:1, 1) #0 = control / 1 = treatment
-print(paste("Control or Treatment:", random_number))
-
-
-
-
 
 server <- function(input, output, session) {
+  random_number <- sample(0:1, 1) #0 = control / 1 = treatment
+  print(paste("Control or Treatment:", random_number))
+  
   closeAllConnections()
   shinyjs::useShinyjs()
   
-  # Nextcloud settings
-  img_cloud_folder <- "treatment/treatment_image"
-  csv_cloud_folder <- "treatment/treatment_csv"
-  img_attention_cloud_folder <- "treatment/treatment_attention_image"
-  csv_attention_cloud_folder <- "treatment/treatment_attention_csv"
-  img_uebung_cloud_folder <- "treatment/treatment_uebung_image"
-  csv_uebung_cloud_folder <- "treatment/treatment_uebung_csv"
-  fail_folder <- "treatment/treatment_failures"
-  question_folder <- "treatment/treatment_questions"
+  if(random_number == 1){
+    loaded_image <- image_read("www/berlin_attention_check_Berlin_Hamburg.png")
+  } else if(random_number == 0){
+    loaded_image <- image_read("www/berlin_kleiner.jpg")
+  }
+  
+  loaded_image_ueb <- image_read("www/anno2.png")
+  
+  # Get image dimensions for display at original size
+  img_info <- image_info(loaded_image)
+  img_width <- img_info$width
+  img_height <- img_info$height
+  
+  # Get image dimensions for display at original size
+  img_info_ueb <- image_info(loaded_image_ueb)
+  img_width_ueb  <- img_info_ueb$width
+  img_height_ueb  <- img_info_ueb$height
+  
+  
+  
+  if(random_number == 1){
+    img_cloud_folder <- "treatment/treatment_image"
+    csv_cloud_folder <- "treatment/treatment_csv"
+    img_attention_cloud_folder <- "treatment/treatment_attention_image"
+    csv_attention_cloud_folder <- "treatment/treatment_attention_csv"
+    img_uebung_cloud_folder <- "treatment/treatment_uebung_image"
+    csv_uebung_cloud_folder <- "treatment/treatment_uebung_csv"
+    fail_folder <- "treatment/treatment_failures"
+    question_folder <- "treatment/treatment_questions"
+  } else if(random_number == 0){
+    img_cloud_folder <- "control/control_image"
+    csv_cloud_folder <- "control/control_csv"
+    img_attention_cloud_folder <- "control/control_attention_image"
+    csv_attention_cloud_folder <- "control/control_attention_csv"
+    img_uebung_cloud_folder <- "control/control_uebung_image"
+    csv_uebung_cloud_folder <- "control/control_uebung_csv"
+    fail_folder <- "control/control_failures"
+    question_folder <- "control/control_questions"
+  }
+
+  if(random_number == 1){
+    save_name = "treatment_"
+  } else if(random_number == 0){
+    save_name = "control_"
+  }
+  
   
   
   username <- "zbc57"
@@ -66,9 +85,15 @@ server <- function(input, output, session) {
   # img_dir <- "1_study_input"
   # all_images <- list.files(img_dir, pattern = "\\.png$", full.names = TRUE)
   
+  if(random_number == 1){
+    img_dir_true <- "1_xai_study_input_true"
+    img_dir_false <- "1_xai_study_input_false"
+  } else if(random_number == 0){
+    img_dir_true <- "1_study_input_true"
+    img_dir_false <- "1_study_input_false"
+  }
   
-  img_dir_true <- "1_xai_study_input_true"
-  img_dir_false <- "1_xai_study_input_false"
+
   
   all_images_true <- list.files(img_dir_true, pattern = "\\.png$", full.names = TRUE)
   all_images_false <- list.files(img_dir_false, pattern = "\\.png$", full.names = TRUE)
@@ -98,7 +123,13 @@ server <- function(input, output, session) {
   
   # Reactive values for page navigation, coordinates, and polygon IDs
   page <- reactiveVal(1)
-  coords <- reactiveVal(value = tibble(x = numeric(), y = numeric(), polygon_id = integer(), name = character()))
+  coords <- reactiveVal(tibble(
+    x = numeric(),
+    y = numeric(),
+    polygon_id = integer(),
+    name = character(),
+    is_complete = logical()  # Neue Spalte hinzufügen
+  ))
   polygon_id <- reactiveVal(1)
   
   # Reactive value to store selected city for each image
@@ -120,18 +151,20 @@ server <- function(input, output, session) {
             
             # Paragraph with increased margin-bottom to add space
             p("We aim to explore effective collaboration between ", strong("ARTIFICIAL INTELLIGENCE"), "and " , strong("HUMANS"),
-              style = "text-align: center; margin-bottom: 40px; margin-top: 20px;"),
+              style = "text-align: center; margin-bottom: 40px; margin-top: 20px; margin-bottom: -5 px;"),
             
             # User ID input
-            div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
-                textInput("user_id_input", label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center;", "Please enter your Prolific ID:"),
+            div(style = "display: flex; flex-direction: column; align-items: center; max-width: 400px; margin-top: -50px; margin: 0 auto; padding: 15px; border-radius: 5px; border: 1px solid #ddd;",
+                textInput("user_id_input", 
+                          label = div(style = "font-size: 16px; font-weight: bold; color: #003366; text-align: center; margin-bottom: 10px;", "Please enter your Prolific ID:"),
                           placeholder = "Prolific ID", width = '100%'),
+                
                 div(style = "font-size: 12px; color: #666; text-align: center;",
                     "The Prolific ID is required to track your work.")
             ),
             
             # Continue button
-            div(style = "display: flex; justify-content: center; margin-top: 20px;",
+            div(style = "display: flex; justify-content: center; margin-top: 50px;",
                 actionButton("next_page", "Continue to Introduction", icon = icon("arrow-right"), class = "btn-primary btn-lg",
                              style = "background-color: #007bff; color: white; border: none; border-radius: 5px;")
             )
@@ -139,23 +172,23 @@ server <- function(input, output, session) {
       )
     } else if (current_page == 2) {  # Initial instructions page
       tagList(
-        div(style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h2("Prolific Introduction", style = "color: #003366; font-weight: bold; text-align: center;"),
+        div(style = "text-align: left; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            h2("Prolific Introduction", style = "color: #003366; font-weight: bold; text-align: left;"),
             
             # Paragraph with increased margin-bottom to add space
             p("Thank you for your interest in participating in our study on 'Human-AI Collaboration'. Before beginning the study, please carefully read the following consent form and general information.",
-              style = "text-align: center; margin-top: 20px; margin-bottom: 40px;"),
+              style = "text-align: left; margin-top: 20px; margin-bottom: 40px;"),
           
-            strong("What Are the Study Conditions?", style = "text-align: center; margin-top: 20px;font-size: 16px;"), 
+            strong("What Are the Study Conditions?", style = "text-align: left; margin-top: 20px;font-size: 16px;"), 
             p("The study will take ", strong("approximately 8 minutes"), " to complete. Please answer all questions as accurately and precisely as possible. You are free to withdraw from the study at any time by closing your browser window."),
             p("Please note that ", strong("attention checks"), " will be conducted throughout the study. Failure to pass the checks will result in no compensation being paid to you.",
-              style = "text-align: center; margin-bottom: 40px;"),
+              style = "text-align: left; margin-bottom: 40px;"),
             
-            strong("How Is Data Collected?", style = "text-align: center; margin-bottom: 40px; font-size: 16px;"),
+            strong("How Is Data Collected?", style = "text-align: left; margin-bottom: 40px; font-size: 16px;"),
             p("Data collection and analysis are conducted exclusively in an anonymized and strictly confidential manner, ensuring that your data cannot be linked to your identity. The anonymized data will be used solely by the Institute for Business Analytics at the University of Ulm. The data collected will be used as part of our research project and will contribute to scientific presentations and publications. You may withdraw your consent for data collection and analysis at any time after the study, without providing a reason.", 
-              style = "text-align: center; margin-bottom: 40px;"),
+              style = "text-align: left; margin-bottom: 40px;"),
             
-            div(style = "width: 100%; display: flex; align-items: center;",
+            div(style = "width: 100%; display: flex; align-items: left;",
                 checkboxInput("consent_checkbox", 
                               label = strong("I have read and understood the information above and consent to participate in the study."),
                               value = FALSE, 
@@ -173,70 +206,79 @@ server <- function(input, output, session) {
       )
     } else if (current_page == 3) {  # Second introduction page
       tagList(
-        div(id = "intro1", style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h2("Introduction to the Study", style = "color: #003366; font-weight: bold; text-align: center;"),
-            
+
+        div(id = "intro1", style = "text-align: left; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            h2("Introduction to the Study", style = "color: #003366; font-weight: bold; text-align: left;"),
+
             p("You will be shown  ", strong("Google Maps images") , " - each depicting a random location from one of four cities: ", 
               style = "text-align: left; margin-top: 20px;"),
             p(HTML("<span style='font-weight: bold;'>Berlin, Hamburg, Jerusalem, or Tel Aviv</span>."),
               style = "text-align: left;"),
             
-            p("Our goal is to ", strong("improve the performance of Artificial Intelligence (AI)"), " in recognizing cities. The AI model has already analyzed these images, predicted the city, and highlighted important areas that influenced its decision. We will provide you with this information.",
-              style = "text-align: left;"),
-            
-            
-            div(
-              strong("However, AI can make mistakes. Your task is to help improve the AI by reviewing its predictions and providing feedback."),
-              style = "color: red;"
+            if(random_number == 1){
+              p("Our goal is to ", strong("improve the performance of Artificial Intelligence (AI)"), " in recognizing cities. The AI model has already analyzed these images, predicted the city, and highlighted important areas that influenced its decision. We will provide you with this information.",
+                style = "text-align: left;")
+            } else if(random_number == 0){
+              p("Our goal is to ", strong("improve the performance of Artificial Intelligence (AI)"), " in recognizing cities. The AI model has already analyzed these images and predicted the city. We will provide you with this information.",
+                style = "text-align: left;")
+            },
+      
+            div(style = "margin-top: 40px; ",
+              strong("However, AI can make mistakes."),
+              div(style = "margin-left: 0px; margin-top: 10px;",
+                  HTML("<b>&#8594; Your task is to help improve the AI by reviewing its predictions and providing feedback.</b>")
+              )
             ),
             
-            actionButton("next_page_step_1", "Continue", icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 20px;")
+            actionButton("next_page_step_1", "Continue", icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 40px; margin bottom: 60px;")
             
         ), 
         
-        div(id = "intro2", style = "text-align: center; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            h5("You will have three tasks for each image:", style = "text-align: left; color: #003366;"),
-       
-            tags$ol(style = "list-style-type: decimal; padding-left: 2;",  # Adds numbers and removes indentation
+        div(id = "intro2", style = "text-align: left; margin: 0 auto; margin-top: 10px; margin bottom: 60px; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            strong("You will have three tasks for each image:", style = "text-align: left; margin-bottom: 40px; font-size: 16px;"),
+        
+            tags$ol(style = "list-style-type: none; padding-left: 2; margin-top: 20px;",  # Adds numbers and removes indentation
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Choose a City: "), "Look at the image and decide which city you think it shows. Use the AI’s prediction as a guide, but remember that it might be wrong."))
+                        tags$li(p(strong("1. Choose a City: "), "Look at the image and decide which city you think it shows. Use the AI’s prediction as a guide, but remember that it might be wrong."))
                     ),
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Mark Important Areas on the Image: "), "Mark the areas on the image that influenced your decision.")),
-                        tags$ul(style = "margin-top: -10px;", 
-                          tags$li("Highlight areas where you agree with the AI’s suggestions."),
-                          tags$li("Add any areas you consider important but were not highlighted by the AI.")
-                        )
+                        tags$li(p(strong("2. Mark Important Areas on the Image: "), "Mark the areas on the image that influenced your decision.")),
+                        
+                        if(random_number == 1){
+                          tags$ul(style = "margin-top: -10px;", 
+                                  tags$li("Highlight areas where you agree with the AI’s suggestions."),
+                                  tags$li("Add any areas you consider important but were not highlighted by the AI.")
+                          )                        
+                        }
                     ),
                     
                     div(style = "text-align: left;",
-                        tags$li(p(strong("Choose a Confidence Level: "), "Indicate how confident you are in your choice, from 'Very Unsure' to 'Very Sure.'"))
+                        tags$li(p(strong("3. Choose a Confidence Level: "), "Indicate how confident you are in your choice, from 'Very Unsure' to 'Very Sure.'"))
                     )
                     
             ),
             
-            actionButton("next_page_step_2", "Continue",  icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 20px;")
+            actionButton("next_page_step_2", "Continue",  icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 40px; margin bottom: 60px;")
             
         ),
         
-        div(id = "intro3", style = "text-align: left; margin: 0 auto; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
-            
-            h5("Bonus Opportunity", style = "text-align: left; color: #003366;"),
-            
+        div(id = "intro3", style = "text-align: left; margin: 0 auto; margin-top: 10px; margin bottom: 60px; max-width: 1000px; padding: 20px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);",
+            strong("Bonus Opportunity", style = "text-align: left; margin-bottom: 40px; font-size: 16px;"),
+           
             p("Your feedback will help us improve the accuracy of our AI model. If you carefully identify the cities and precisely mark the relevant areas on the images, you can earn a ", strong("bonus payment of 1 USD"), " in addition to your fixed reward.",
               style = "text-align: left; margin-top: 10px;"),
             
-            h5("Attention Checks", style = "text-align: left; color: #003366;"),
+            strong("Attention Checks", style = "text-align: left; margin-bottom: 40px; color: #FF0000; font-size: 16px;"),
             
             p("To ensure quality, your responses will be evaluated through attention checks. These checks will assess:",
-              style = "text-align: left; margin-top: 10px;"
+              style = "text-align: left; margin-top: 10px; color: #FF0000"
             ),
-            tags$ul(style = "margin-top: -5px; text-align: left; padding-left: 40px;",  # Adjust indentation
+            tags$ul(style = "margin-top: -5px; text-align: left; padding-left: 40px; color: #FF0000",  # Adjust indentation
                     tags$li("The accuracy of your city selections."),
                     tags$li("The precision of your markings on the images.")
             ),
             p("Failure to pass these checks will result in no payment.",
-              style = "font-weight: bold; text-align: left; margin-top: 10px;"
+              style = "font-weight: bold; text-align: left; margin-top: 10px; color: #FF0000"
             )
             ,
             
@@ -262,11 +304,20 @@ server <- function(input, output, session) {
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",
                     
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; justify-content: center; align-items: center;",  
-                        p(style = "text-align: center;", "In the video below, the tool you are about to use is explained.")
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; flex-direction: column; align-items: flex-start;",  
+                        div(style = "margin-bottom: 10px;",
+                            strong("How to Use the Marking Tool")
+                        ),
+                        p(style = "text-align: left;", 
+                          "In the video below, you'll find a detailed explanation of the tool you'll be using. Watch it to learn how to use the marking tool efficiently.")
                     ),
-                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; justify-content: center; align-items: center;",  
-                        p(style = "text-align: center;", "Now it's your turn! Before starting the study, please familiarize yourself with the marking tool by marking the gray shapes in the image. Take your time and ensure each shape is correctly identified.", strong("The result will be saved and used as an attention check."))
+                    div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; min-height: 10px; flex-direction: column; align-items: flex-start;",  
+                        div(style = "margin-bottom: 10px;",
+                            strong("Now it's your turn!")
+                        ),
+                        p(style = "text-align: left;", 
+                          "Before starting the study, please familiarize yourself with the marking tool by marking the gray shapes in the image. Take your time and ensure each shape is correctly identified.", 
+                          strong("The result will be saved and used as an attention check."))
                     )
                 )
             ),
@@ -278,7 +329,7 @@ server <- function(input, output, session) {
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; flex-direction: column;",  
                         div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
                             div(style = "text-align: center;",
-                                tags$img(src = "examples/gif2.gif", width = "auto", height = "500px")
+                                tags$img(src = "examples/gif_fertig.gif", width = "auto", height = "400px")
                             ),
                         ),
                     ),
@@ -315,7 +366,12 @@ server <- function(input, output, session) {
       polygon_id(1)  # Reset polygon ID
       
       # Load Image
-      image_path <- "www/berlin_attention_check_Berlin_Hamburg.png"
+      if(random_number == 1){
+        image_path <- "www/berlin_attention_check_Berlin_Hamburg.png"
+      } else if(random_number == 0){
+        image_path <- "www/berlin_kleiner.jpg"
+      }
+      
       loaded_image <- image_read(image_path)
       
       # Get image dimensions for original size display
@@ -341,7 +397,7 @@ server <- function(input, output, session) {
                             if(random_number == 1){
                               p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
                               " shown below were key factors in its decision.")
-                            } else{
+                            } else if(random_number == 0){
                               p("The image is shown below.")
                             }
                         )
@@ -439,7 +495,7 @@ server <- function(input, output, session) {
                             if(random_number == 1){
                               p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
                                 " shown below were key factors in its decision.")
-                            } else{
+                            } else if(random_number == 0){
                               p("The image is shown below.")
                             }
                         )
@@ -555,28 +611,33 @@ server <- function(input, output, session) {
   output$imagePlot_6 <- renderPlot({
     # Render the image and display any drawn polygons
     img_raster <- as.raster(loaded_image)
-    par(bg = NA, mar = c(0, 0, 0, 0))  # Transparent background with no margins
-    
-    # Plot the image without borders or axis labels
+    par(bg = NA, mar = c(0, 0, 0, 0))
     plot(img_raster, xlab = "", ylab = "", bty = "n", asp = img_height / img_width)
     
-    # Draw existing annotations (polygons) on the image
     all_polygons <- coords() %>% filter(name == "polygon_6")
+    
     for (poly_id in unique(all_polygons$polygon_id)) {
       polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
+      if (nrow(polygon_coords) > 0) {
+        is_complete <- polygon_coords$is_complete[1]
+      } else {
+        is_complete <- FALSE  # Standardwert, wenn keine Daten vorhanden sind
+      }      
       
-      # Display points if at least one point exists
-      if (nrow(polygon_coords) >= 1) {
-        points(polygon_coords$x, polygon_coords$y, col = "orange", pch = 15, cex = 1.5)  # Draw points
+      color <- if (!is.na(is_complete) && is_complete) {
+        rgb(1, 0.4, 0, alpha = 0.7)  # Dunkelorange für abgeschlossene Polygone
+      } else {
+        rgb(1, 0.65, 0, alpha = 0.5)  # Hellorange für nicht abgeschlossene Polygone
       }
       
+      if (nrow(polygon_coords) >= 1) {
+        points(polygon_coords$x, polygon_coords$y, col = color, pch = 15, cex = 1.5)
+      }
       if (nrow(polygon_coords) >= 2) {
-        # Draw lines between consecutive points
-        lines(polygon_coords$x, polygon_coords$y, col = "orange", lwd = 2)
+        lines(polygon_coords$x, polygon_coords$y, col = color, lwd = 2)
       }
       if (nrow(polygon_coords) > 2) {
-        # Complete the polygon if more than 2 points exist
-        polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
+        polygon(polygon_coords$x, polygon_coords$y, border = color, col = color)
       }
     }
   })
@@ -585,27 +646,33 @@ server <- function(input, output, session) {
   output$imagePlot_uebung <- renderPlot({
     # Render the image and display any drawn polygons
     img_raster <- as.raster(loaded_image_ueb)
-    par(bg = NA, mar = c(0, 0, 0, 0))  # Transparent background with no margins
+    par(bg = NA, mar = c(0, 0, 0, 0))
+    plot(img_raster, xlab = "", ylab = "", bty = "n", asp = img_height_ueb / img_width_ueb)
     
-    # Plot the image without borders or axis labels
-    plot(img_raster, xlab = "", ylab = "", bty = "n", asp = img_height / img_width)
-    
-    
-    # Draw existing annotations (polygons) on the image
+    # Filtere Polygone für Seite 4
     all_polygons <- coords() %>% filter(name == "polygon_uebung")
+    
     for (poly_id in unique(all_polygons$polygon_id)) {
       polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
-      # Display points if at least one point exists
+      if (nrow(polygon_coords) > 0) {
+        is_complete <- polygon_coords$is_complete[1]
+      } else {
+        is_complete <- FALSE  # Standardwert, wenn keine Daten vorhanden sind
+      }      
+      # Wähle Farbe basierend auf dem Status
+      color <- if (!is.na(is_complete) && is_complete) {
+        rgb(1, 0.4, 0, alpha = 0.7)  # Dunkelorange für abgeschlossene Polygone
+      } else {
+        rgb(1, 0.65, 0, alpha = 0.5)  # Hellorange für nicht abgeschlossene Polygone
+      }      
       if (nrow(polygon_coords) >= 1) {
-        points(polygon_coords$x, polygon_coords$y, col = "orange", pch = 15, cex = 1.5)  # Draw points
+        points(polygon_coords$x, polygon_coords$y, col = color, pch = 15, cex = 1.5)
       }
       if (nrow(polygon_coords) >= 2) {
-        # Draw lines between consecutive points
-        lines(polygon_coords$x, polygon_coords$y, col = "orange", lwd = 2)
+        lines(polygon_coords$x, polygon_coords$y, col = color, lwd = 2)
       }
       if (nrow(polygon_coords) > 2) {
-        # Complete the polygon if more than 2 points exist
-        polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
+        polygon(polygon_coords$x, polygon_coords$y, border = color, col = color)
       }
     }
     
@@ -618,6 +685,11 @@ server <- function(input, output, session) {
   # Capture and store clicks for annotation
   observeEvent(input$image_click_6, {
     current_coords <- coords()
+    if (!"is_complete" %in% colnames(current_coords)) {
+      current_coords <- current_coords %>% mutate(is_complete = FALSE)
+      coords(current_coords)
+    }
+    
     polygon_id_val <- polygon_id()
     adjusted_x <- input$image_click_6$x
     adjusted_y <- input$image_click_6$y
@@ -628,7 +700,8 @@ server <- function(input, output, session) {
       x = adjusted_x,
       y = adjusted_y,
       polygon_id = polygon_id_val,
-      name = "polygon_6"
+      name = "polygon_6",  # oder polygon_uebung, polygon_i
+      is_complete = FALSE
     )
     coords(current_coords)
   })
@@ -636,6 +709,10 @@ server <- function(input, output, session) {
   # Capture and store clicks for annotation
   observeEvent(input$image_click_uebung, {
     current_coords <- coords()
+    if (!"is_complete" %in% colnames(current_coords)) {
+      current_coords <- current_coords %>% mutate(is_complete = FALSE)
+      coords(current_coords)
+    }
     polygon_id_val <- polygon_id()
     
     adjusted_x <- input$image_click_uebung$x
@@ -647,7 +724,8 @@ server <- function(input, output, session) {
       x = adjusted_x,
       y = adjusted_y,
       polygon_id = polygon_id_val,
-      name = "polygon_uebung"
+      name = "polygon_uebung",
+      is_complete = FALSE  # Standardwert
     )
     coords(current_coords)
   })
@@ -688,11 +766,31 @@ server <- function(input, output, session) {
   
   # Finalize the current polygon and start a new one
   observeEvent(input$end_polygon_6, {
+    current_coords <- coords()
+    current_polygon_id <- polygon_id()
+    
+    # Setze is_complete für das aktuelle Polygon
+    current_coords <- current_coords %>%
+      mutate(is_complete = if_else(polygon_id == current_polygon_id & name == "polygon_6", TRUE, is_complete))
+    
+    coords(current_coords)
+    
+    # Erhöhe die Polygon-ID für das nächste Polygon
     polygon_id(polygon_id() + 1)
   })
-  
+
   # Finalize the current polygon and start a new one
   observeEvent(input$end_polygon_uebung, {
+    current_coords <- coords()
+    current_polygon_id <- polygon_id()
+    
+    # Setze `is_complete` auf TRUE für das aktuelle Polygon
+    current_coords <- current_coords %>%
+      mutate(is_complete = if_else(polygon_id == current_polygon_id & name == "polygon_uebung", TRUE, is_complete))
+    
+    coords(current_coords)
+    
+    # Erhöhe die Polygon-ID für das nächste Polygon
     polygon_id(polygon_id() + 1)
   })
   
@@ -781,6 +879,11 @@ server <- function(input, output, session) {
     
     observeEvent(input[[paste0("image_click_", i)]], {
       current_coords <- coords()
+      if (!"is_complete" %in% colnames(current_coords)) {
+        current_coords <- current_coords %>% mutate(is_complete = FALSE)
+        coords(current_coords)
+      }
+      
       polygon_id_val <- polygon_id()
       
       # Store the coordinates directly for display with scaling applied
@@ -792,7 +895,8 @@ server <- function(input, output, session) {
         x = adjusted_x,
         y = adjusted_y,
         polygon_id = polygon_id_val,
-        name = paste("polygon", i)
+        name = paste("polygon", i),
+        is_complete = FALSE  # Standardwert
       )
       coords(current_coords)
     })
@@ -818,17 +922,30 @@ server <- function(input, output, session) {
       all_polygons <- coords() %>% filter(name == paste("polygon", i))
       for (poly_id in unique(all_polygons$polygon_id)) {
         polygon_coords <- all_polygons %>% filter(polygon_id == poly_id)
-        # Display points if at least one point exists
+        
+        # Fehlerbehebung: Überprüfen, ob polygon_coords leer ist
+        if (nrow(polygon_coords) > 0) {
+          is_complete <- polygon_coords$is_complete[1]
+        } else {
+          is_complete <- FALSE  # Standardwert, wenn keine Daten vorhanden sind
+        }
+        
+        # Farbe basierend auf is_complete setzen
+        color <- if (!is.na(is_complete) && is_complete) {
+          rgb(1, 0.4, 0, alpha = 0.7)  # Dunkelorange
+        } else {
+          rgb(1, 0.65, 0, alpha = 0.5)  # Hellorange
+        }
+        
+        # Zeichne Punkte, Linien und Polygone
         if (nrow(polygon_coords) >= 1) {
-          points(polygon_coords$x, polygon_coords$y, col = "orange", pch = 15, cex = 1.5)  # Draw points
+          points(polygon_coords$x, polygon_coords$y, col = color, pch = 15, cex = 1.5)
         }
         if (nrow(polygon_coords) >= 2) {
-          # Draw lines between consecutive points
-          lines(polygon_coords$x, polygon_coords$y, col = "orange", lwd = 2)
+          lines(polygon_coords$x, polygon_coords$y, col = color, lwd = 2)
         }
         if (nrow(polygon_coords) > 2) {
-          # Complete the polygon if more than 2 points exist
-          polygon(polygon_coords$x, polygon_coords$y, border = "orange", col = rgb(1, 0.65, 0, alpha = 0.5))
+          polygon(polygon_coords$x, polygon_coords$y, border = color, col = color)
         }
       }
       
@@ -856,6 +973,16 @@ server <- function(input, output, session) {
     
     # Finalize polygon
     observeEvent(input[[paste0("end_polygon_", i)]], {
+      current_coords <- coords()
+      current_polygon_id <- polygon_id()
+      
+      # Setze `is_complete` auf TRUE für das aktuelle Polygon
+      current_coords <- current_coords %>%
+        mutate(is_complete = if_else(polygon_id == current_polygon_id & name == paste("polygon", i), TRUE, is_complete))
+      
+      coords(current_coords)
+      
+      # Erhöhe die Polygon-ID für das nächste Polygon
       polygon_id(polygon_id() + 1)
     })
   })
@@ -962,7 +1089,7 @@ server <- function(input, output, session) {
   observeEvent(input$next_page, {
     current_page <- page()
     
-    if (current_page == 10) {
+    if (current_page == 9) {
       # Save only if both a city is selected and there is an annotation
       polygon_coords <- coords() %>% filter(name == paste("polygon_6"))
       annotation_missing <- nrow(polygon_coords) < 3  
@@ -1000,7 +1127,7 @@ server <- function(input, output, session) {
           writeLines(paste("User ID:", user_id(), "\nStatus: Failed Attention Check"), fail_text_path)
           
           # Specify the new Nextcloud folder
-          save_to_nextcloud(fail_text_path, fail_folder, paste0("treatment_", user_id(), ".txt"), username, password)
+          save_to_nextcloud(fail_text_path, fail_folder, paste0(save_name, user_id(), ".txt"), username, password)
           # Move to the next page after processing
         } 
         
@@ -1026,14 +1153,18 @@ server <- function(input, output, session) {
         }
         
         # Load the image and adjust coordinates
-        img <- image_read("www/berlin_attention_check_Berlin_Hamburg.png")
+        if(random_number == 1){
+          img <- image_read("www/berlin_attention_check_Berlin_Hamburg.png")
+        } else if(random_number == 0){
+          img <- image_read("www/berlin_kleiner.jpg")
+        }
         img_height <- image_info(img)$height
         save_coords <- polygon_coords %>% mutate(y = img_height - y)
         
         # Save adjusted coordinates to CSV and upload to Nextcloud
         csv_temp_path <- tempfile(fileext = ".csv")
         write.csv(save_coords, csv_temp_path, row.names = FALSE)
-        save_to_nextcloud(csv_temp_path, csv_attention_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, "_", selected_class, "_", confidence_level, ".csv"), username, password)
+        save_to_nextcloud(csv_temp_path, csv_attention_cloud_folder, paste0(save_name, user_id(), "_", input_filename, "_", selected_class, "_", confidence_level, ".csv"), username, password)
         
         # Draw polygons on the image for saving
         img <- image_draw(img)
@@ -1046,7 +1177,7 @@ server <- function(input, output, session) {
         # Save the annotated image temporarily and upload to Nextcloud
         img_temp_path <- tempfile(fileext = ".png")
         image_write(img, path = img_temp_path, format = "png")
-        save_to_nextcloud(img_temp_path, img_attention_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, "_", selected_class, "_", confidence_level, ".png"), username, password)
+        save_to_nextcloud(img_temp_path, img_attention_cloud_folder, paste0(save_name , user_id(), "_", input_filename, "_", selected_class, "_", confidence_level, ".png"), username, password)
         
         removeModal()
         page(current_page + 1)   # Move to the next page after processing
@@ -1101,13 +1232,13 @@ server <- function(input, output, session) {
       # Save adjusted coordinates to CSV and upload to Nextcloud
       csv_temp_path <- tempfile(fileext = ".csv")
       write.csv(save_coords, csv_temp_path, row.names = FALSE)
-      save_to_nextcloud(csv_temp_path, csv_uebung_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, ".csv"), username, password)
+      save_to_nextcloud(csv_temp_path, csv_uebung_cloud_folder, paste0(save_name, user_id(), "_", input_filename, ".csv"), username, password)
       
       
       # Save the annotated image temporarily and upload to Nextcloud
       img_temp_path <- tempfile(fileext = ".png")
       image_write(img, path = img_temp_path, format = "png")
-      save_to_nextcloud(img_temp_path, img_uebung_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, ".png"), username, password)
+      save_to_nextcloud(img_temp_path, img_uebung_cloud_folder, paste0(save_name, user_id(), "_", input_filename, ".png"), username, password)
       
       removeModal()
       page(current_page + 1)   # Move to the next page after processing
@@ -1180,7 +1311,7 @@ server <- function(input, output, session) {
         # Save adjusted coordinates to CSV and upload to Nextcloud
         csv_temp_path <- tempfile(fileext = ".csv")
         write.csv(save_coords, csv_temp_path, row.names = FALSE)
-        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, "_", selected_class,  "_",  confidence_level, ".csv"), username, password)
+        save_to_nextcloud(csv_temp_path, csv_cloud_folder, paste0(save_name, user_id(), "_", input_filename, "_", selected_class,  "_",  confidence_level, ".csv"), username, password)
         
         # Draw polygons on the image for saving
         img <- image_draw(img)
@@ -1193,7 +1324,7 @@ server <- function(input, output, session) {
         # Save the annotated image temporarily and upload to Nextcloud
         img_temp_path <- tempfile(fileext = ".png")
         image_write(img, path = img_temp_path, format = "png")
-        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0("treatment_", user_id(), "_", input_filename, "_", selected_class, "_",  confidence_level, ".png"), username, password)
+        save_to_nextcloud(img_temp_path, img_cloud_folder, paste0(save_name, user_id(), "_", input_filename, "_", selected_class, "_",  confidence_level, ".png"), username, password)
         
         removeModal()
         
@@ -1254,12 +1385,12 @@ server <- function(input, output, session) {
         save_to_nextcloud(
           csv_temp_path, 
           question_folder, 
-          paste0("treatment_", user_id(), "_questions.csv"), 
+          paste0(save_name, user_id(), "_questions.csv"), 
           username, 
           password
         )
         
-        page(13)  # Set to the last page number directly
+        page(12)  # Set to the last page number directly
       }
     } else {
       page(current_page + 1)  # Move to the next page for non-image pages
