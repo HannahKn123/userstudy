@@ -5,6 +5,6 @@ account: ibaulmuniversity
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13371191
-bundleId: 9380706
+bundleId: 9418859
 url: https://ibaulmuniversity.shinyapps.io/userstudy_treatment/
 version: 1
