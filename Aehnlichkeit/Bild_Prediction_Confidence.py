@@ -8,7 +8,7 @@ output_folder = "Deskriptive Statistik"
 os.makedirs(output_folder, exist_ok=True)
 
 # Daten einlesen
-data_file = "results_with_iou_wbce_jsd_softdice.xlsx"  # Ersetze mit deinem Dateinamen
+data_file = "Rohdateien.xlsx"  # Ersetze mit deinem Dateinamen
 df = pd.read_excel(data_file)
 
 # 1. Gruppenanteile

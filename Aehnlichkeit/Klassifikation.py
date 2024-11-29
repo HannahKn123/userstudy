@@ -7,7 +7,7 @@ output_folder = "Klassifikation"
 os.makedirs(output_folder, exist_ok=True)
 
 # Daten einlesen
-data_file = "results_with_iou_wbce_jsd_softdice.xlsx"  # Name der Rohdaten-Datei
+data_file = "Rohdateien.xlsx"  # Name der Rohdaten-Datei
 df = pd.read_excel(data_file)
 
 # Berechnung der Übereinstimmung zwischen Mensch und AI
@@ -43,7 +43,7 @@ agreement_by_ai_correct['Agreement'] = agreement_by_ai_correct['Agreement'].map(
 total_counts = agreement_by_ai_correct.groupby('AI_Correct')['Anzahl'].transform('sum')
 agreement_by_ai_correct['Prozent'] = agreement_by_ai_correct['Anzahl'] / total_counts * 100
 
-# Balkendiagramm erstellen
+# Balkendiagramm erstellen mit unterschiedlichen Farben
 fig_ai_correct = px.bar(
     agreement_by_ai_correct,
     x='AI_Correct',
@@ -52,7 +52,8 @@ fig_ai_correct = px.bar(
     barmode='group',
     title="Übereinstimmung von Mensch und KI nach Richtigkeit der KI-Klassifikation",
     labels={'AI_Correct': 'Richtigkeit der KI', 'Prozent': 'Prozentuale Häufigkeit', 'Agreement': 'Übereinstimmung'},
-    text='Prozent'
+    text='Prozent',
+    color_discrete_sequence=["#636EFA", "#EF553B"]  # Unterschiedliche Farben für die Balken
 )
 
 # Balkenbeschriftungen hinzufügen
@@ -61,5 +62,7 @@ fig_ai_correct.update_traces(texttemplate='%{text:.2f}%', textposition='outside'
 # Diagramm speichern
 fig_agreement.write_image(os.path.join(output_folder, "Uebereinstimmung_Mensch_AI_Prozent.png"))
 fig_ai_correct.write_image(os.path.join(output_folder, "Uebereinstimmung_nach_KI_Richtigkeit.png"))
+
+
 
 print(f"Das Diagramm zur Übereinstimmung zwischen Mensch und AI wurde im Ordner '{output_folder}' gespeichert.")

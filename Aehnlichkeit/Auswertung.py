@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Datei laden
-file_path = "iou_results_with_metadata.xlsx"  # Passe den Pfad an, falls notwendig
+file_path = "Rohdateien.xlsx"  # Passe den Pfad an, falls notwendig
 data = pd.read_excel(file_path)
 
 # 1. Vergleich der Klassifikationsgenauigkeit zwischen Gruppen
