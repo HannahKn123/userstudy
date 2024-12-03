@@ -76,10 +76,10 @@ ui <- fluidPage(
         width: 200px;
       }
       .highlight-container h4 {
-        background-color: #d3d3d3;
+        background-color: #800080;
       }
       .decision-container h4 {
-        background-color: #d3d3d3;
+        background-color: #FFA500;
       }
       .flex-container {
         display: flex;
