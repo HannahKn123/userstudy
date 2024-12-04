@@ -1,2 +1,0 @@
-User ID: ^1 
-Status: Failed Attention Check
