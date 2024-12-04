@@ -29,7 +29,7 @@ server <- function(input, output, session) {
     loaded_image <- image_read("www/berlin_kleiner.jpg")
   }
   
-  loaded_image_ueb <- image_read("www/anno2.png")
+  loaded_image_ueb <- image_read("www/anno4.png")
   
   # Get image dimensions for display at original size
   img_info <- image_info(loaded_image)
@@ -181,7 +181,7 @@ server <- function(input, output, session) {
               style = "font-size: 18px; text-align: left; margin-top: 20px; margin-bottom: 40px;"),
           
             strong("What Are the Study Conditions?", style = "font-size: 18px; text-align: left; margin-top: 20px;font-size: 18px;"), 
-            p(style = "font-size: 18px;", "The study will take ", strong("approximately 8 minutes"), " to complete. Please answer all questions as accurately and precisely as possible. You are free to withdraw from the study at any time by closing your browser window."),
+            p(style = "font-size: 18px;", "The study will take ", strong("approximately 15 minutes"), " to complete. Please answer all questions as accurately and precisely as possible. You are free to withdraw from the study at any time by closing your browser window."),
             p("Please note that ", strong("attention checks"), " will be conducted throughout the study. Failure to pass the checks will result in no compensation being paid to you.",
               style = "font-size: 18px; text-align: left; margin-bottom: 40px;"),
             
@@ -332,9 +332,9 @@ server <- function(input, output, session) {
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 50%; padding: 15px; flex-direction: column;",  
-                        div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;",  
+                        div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 25px;",  
                             div(style = "text-align: center;",
-                                tags$img(src = "examples/gif_fertig.gif", width = "auto", height = "400px")
+                                tags$img(src = "examples/gif_final.gif", width = "auto", height = "448px")
                             ),
                         ),
                     ),
@@ -418,7 +418,7 @@ server <- function(input, output, session) {
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
                         div(style = "display: flex; flex-direction: column; width: 100%; height: 100%; gap: 30px;  margin-top: 10px",  
-                            p("This is an Attention Check. Please ", strong(style = "color: #FFA500;", "select Berlin"), " below. If you select another city you will fail the attention check."),
+                            p("This is an attention Check. Please ", strong(style = "color: #FFA500;", "select Berlin"), " below. If you select another city you will fail the attention check."),
                             div(class = "btn-group-container", style = "display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;",
                                 actionButton("class_6_tel_aviv", label = "Tel Aviv", class = "btn", style = "width: 150px; text-align: center; font-size: 20px;"),
                                 actionButton("class_6_jerusalem", label = "Jerusalem", class = "btn", style = "width: 150px; text-align: center;font-size: 20px;"),
@@ -439,7 +439,7 @@ server <- function(input, output, session) {
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                         div(style = " margin-top: 10px; width: 100%; text-align: left; margin-bottom: 10px;",
                             if(random_number == 1){
-                              p("This is an attention check. Please ", span(style = "color: #FFA500; font-weight: bold;", "highlight the yellow sign that says 'Berlin'"), " using the marking tool. If you agree with the AI's suggestions, override the", span(style = "color: #800080; font-weight: bold;", "purple areas."))
+                              p("This is an attention check. Please ", span(style = "color: #FFA500; font-weight: bold;", "highlight the yellow sign that says 'Berlin'"), " using the marking tool. If you agree with the AI's markings, override the", span(style = "color: #800080; font-weight: bold;", "purple areas."))
                             } else if(random_number == 0){
                               p("This is an attention check. Please ", span(style = "color: #FFA500; font-weight: bold;", "highlight the yellow sign that says 'Berlin'"), " using the marking tool.")
                             }
@@ -545,7 +545,7 @@ server <- function(input, output, session) {
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 72%; padding: 15px; flex-direction: column; align-items: center;",  
                         div(style = "margin-top: 10px; width: 100%; text-align: left; margin-bottom: 10px;",
                             if(random_number == 1){
-                              p("Which parts of the image led you to your decision? Please ", span(style = "color: #FFA500; font-weight: bold;", "mark these key areas as precisely as possible"), " using the marking tool. If you agree with the AI's suggestions, override the", span(style = "color: #800080; font-weight: bold;", "purple areas."))
+                              p("Which parts of the image led you to your decision? Please ", span(style = "color: #FFA500; font-weight: bold;", "mark these key areas as precisely as possible"), " using the marking tool. If you agree with the AI's markings, override the", span(style = "color: #800080; font-weight: bold;", "purple areas."))
                             } else if(random_number == 0){
                               p("Which parts of the image led you to your decision? Please ", span(style = "color: #FFA500; font-weight: bold;", "mark these key areas as precisely as possible"), " using the marking tool.")
                             }
@@ -1196,6 +1196,8 @@ server <- function(input, output, session) {
         
         removeModal()
         page(current_page + 1)   # Move to the next page after processing
+        
+        session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
       }
     }
     else if (current_page == 4) {
@@ -1258,6 +1260,7 @@ server <- function(input, output, session) {
       removeModal()
       page(current_page + 1)   # Move to the next page after processing
       
+      session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
       
     } else if (current_page >= 5 && current_page <= 10 && current_page != 9) {
       
@@ -1345,6 +1348,9 @@ server <- function(input, output, session) {
         
         page(current_page + 1)  # Move to the next page after processing
       }
+      
+      session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
+      
     } else if  (page() == 1) {  # Check if on the first page
       if (input$user_id_input == "") {
         # Show a warning if User ID is empty
@@ -1358,6 +1364,9 @@ server <- function(input, output, session) {
         user_id(input$user_id_input)
         page(2)  # Move to the second page
       }
+      
+      session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
+      
     } else if (current_page == 2) {  # Check consent on page 2
       if (is.null(input$consent_checkbox) || !input$consent_checkbox) {
         showModal(modalDialog(
@@ -1369,6 +1378,9 @@ server <- function(input, output, session) {
       } else {
         page(current_page + 1)  # Move to the next page
       }
+      
+      session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
+      
     } else if (current_page == 11) {  # Last page to save the questionnaire responses
       # Check if both questions have at least one selected value
       if (is.null(input$q1) || length(input$q1) == 0 || 
@@ -1406,9 +1418,13 @@ server <- function(input, output, session) {
         )
         
         page(12)  # Set to the last page number directly
+        session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
+        
       }
     } else {
       page(current_page + 1)  # Move to the next page for non-image pages
+      session$sendCustomMessage("scrollTop", list())  # Sendet die Nachricht, um zu scrollen
+      
     }
   })
   

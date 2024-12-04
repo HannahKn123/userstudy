@@ -2,6 +2,18 @@ library(shiny)
 library(shinyjs)
 
 ui <- fluidPage(
+  tags$head(
+    tags$script(HTML("$(document).ready(function() { window.scrollTo(0, 0); });"))
+  ),
+  
+  tags$head(
+    tags$script(HTML('
+      Shiny.addCustomMessageHandler("scrollTop", function(message) {
+        window.scrollTo(0, 0); // Scrollt nach oben
+      });
+    '))
+  ),
+  
   useShinyjs(),
   # Link to Google Fonts
   tags$head(
@@ -137,6 +149,13 @@ ui <- fluidPage(
       });
     ")),
     
+    
+    tags$script(HTML("
+      $(document).on('shiny:connected', function(event) {
+        // Scrollen zum Anfang, wenn die Seite geladen wird
+        window.scrollTo(0, 0);
+      });
+    ")),
     
     
     tags$style(HTML("
