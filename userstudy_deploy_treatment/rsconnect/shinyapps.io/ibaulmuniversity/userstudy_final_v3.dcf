@@ -1,0 +1,12 @@
+name: userstudy_final_v3
+title: userstudy_final_v3
+username: ibaulmuniversity
+account: ibaulmuniversity
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13557418
+bundleId: 9487108
+url: https://ibaulmuniversity.shinyapps.io/userstudy_final_v3/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

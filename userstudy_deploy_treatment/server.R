@@ -226,8 +226,12 @@ server <- function(input, output, session) {
       
             div(style = "margin-top: 40px; ",
               div(style = "margin-left: 0px; margin-top: 10px; font-size: 20px",
-                  HTML("<b>&#8594; Your task is to improve the performance of the AI by reviewing its predictions and providing feedback.</b>")
-              )
+                  if(random_number == 1){
+                    HTML("<b>&#8594; Your task is to improve the performance of the AI by reviewing its predictions, highlighted areas and providing feedback.</b>")
+                  } else if(random_number == 0){
+                    HTML("<b>&#8594; Your task is to improve the performance of the AI by reviewing its predictions and providing feedback.</b>")
+                  }
+                )
             ),
 
             actionButton("next_page_step_1", "Continue", icon = icon("arrow-down"), class = "btn-primary", style = "margin-top: 40px; margin bottom: 60px;")
@@ -270,13 +274,10 @@ server <- function(input, output, session) {
             
             strong("Attention Checks", style = "font-size: 18px; text-align: left; margin-bottom: 40px; color: #FF0000; font-size: 18px;"),
             
-            p("To ensure quality, your responses will be evaluated through attention checks. These checks will assess:",
+            p("To ensure quality, your responses will be evaluated through attention checks.",
               style = "font-size: 18px; text-align: left; margin-top: 10px; color: #FF0000"
             ),
-            tags$ul(style = "font-size: 18px; margin-top: -5px; text-align: left; padding-left: 40px; color: #FF0000",  # Adjust indentation
-                    tags$li("The accuracy of your city selections."),
-                    tags$li("The precision of your markings on the images.")
-            ),
+          
             p("Failure to pass these checks will result in no payment.",
               style = "font-size: 18px; font-weight: bold; text-align: left; margin-top: 10px; color: #FF0000"
             )
@@ -403,7 +404,7 @@ server <- function(input, output, session) {
                         div(style = "display: flex; text-align: left; width: 100%;  margin-top: 10px",  
                             if(random_number == 1){
                               p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
-                              " shown below were key factors in its decision.")
+                              " shown below were highly relevant for the AI’s decision.")
                             } else if(random_number == 0){
                               p("The image is shown below.")
                             }
@@ -413,7 +414,7 @@ server <- function(input, output, session) {
             ),
             div(class = "decision-container",
                 style = "font-size: 18px; background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1400px; margin-top: 10px;",  
-                h4(style="font-size: 20px", "Human Decision"),
+                h4(style="font-size: 20px", "Your Decision"),
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
@@ -508,7 +509,7 @@ server <- function(input, output, session) {
                         div(style = "display: flex; text-align: left; width: 100%;  margin-top: 10px",  
                             if(random_number == 1){
                               p("The ", span(style = "color: #800080; font-weight: bold;", "highlighted areas"), 
-                                " shown below were key factors in its decision.")
+                                " shown below were highly relevant for the AI’s decision.")
                             } else if(random_number == 0){
                               p("The image is shown below.")
                             }
@@ -518,7 +519,7 @@ server <- function(input, output, session) {
             ),
             div(class = "decision-container",
                 style = "font-size: 18px; background-color: #e0e0e0; border-radius: 8px; display: flex; padding: 10px; width: 100%; max-width: 1400px; margin-top: 10px;",  # Reduced margin-top
-                h4(style="font-size: 20px", "Human Decision"),
+                h4(style="font-size: 20px", "Your Decision"),
                 div(class = "flex-container", 
                     style = "display: flex; gap: 20px; width: 100%; align-items: stretch;",  
                     div(style = "background-color: #ffffff; border-radius: 8px; display: flex; flex: 1; flex-basis: 28%; padding: 15px; flex-direction: column;",  
